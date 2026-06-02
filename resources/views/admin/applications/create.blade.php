@@ -138,38 +138,69 @@
     </div>
 </div>
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    .select2-container--default .select2-selection--single {
-        height: calc(2.25rem + 2px);
-        padding: .375rem .75rem;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: calc(2.25rem + 2px);
-    }
-</style>
+@endsection
 
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@section('additional_js')
+<link rel="stylesheet" href="{{ asset('plugins/select2/css/select2.min.css') }}">
+<link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
+<script src="{{ asset('plugins/select2/js/select2.full.min.js') }}"></script>
 <script>
-    $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "Select an option",
-            allowClear: true
-        });
-        
-        // University-department relationship
-        $('#university_id').change(function() {
-            var universityId = $(this).val();
-            $('#department_id').empty().append('<option value="">Select Department</option>');
-            
-            if (universityId) {
-                $.get('/api/universities/' + universityId + '/departments', function(data) {
-                    $.each(data, function(key, department) {
-                        $('#department_id').append('<option value="'+ department.id +'">'+ department.name +'</option>');
-                    });
-                });
-            }
-        });
+$(function() {
+    $('#student_id, #university_id').select2({
+        theme: 'bootstrap4',
+        placeholder: 'Select an option',
+        allowClear: true,
+        width: '100%'
     });
+
+    var BASE    = '{{ url("admin/programs/by-university") }}';
+    var oldDept = '{{ old("department") }}';
+    var oldLang = '{{ old("language") }}';
+    var oldDeg  = '{{ old("degree") }}';
+
+    function setMsg(msg) {
+        $('#department, #language, #degree')
+            .html('<option value="">' + msg + '</option>')
+            .prop('disabled', true);
+    }
+
+    function load(uniId, dept, lang, deg) {
+        setMsg('Loading...');
+        $.getJSON(BASE + '/' + uniId)
+            .done(function(data) {
+                var d = '<option value="">Select Department</option>';
+                $.each(data.departments, function(i, v) {
+                    d += '<option value="' + v + '"' + (v === dept ? ' selected' : '') + '>' + v + '</option>';
+                });
+                var l = '<option value="">Select Language</option>';
+                $.each(data.languages, function(i, v) {
+                    l += '<option value="' + v + '"' + (v === lang ? ' selected' : '') + '>' + v + '</option>';
+                });
+                var g = '<option value="">Select Degree</option>';
+                $.each(data.degrees, function(i, v) {
+                    g += '<option value="' + v + '"' + (v === deg ? ' selected' : '') + '>' + v + '</option>';
+                });
+                $('#department').html(d).prop('disabled', false);
+                $('#language').html(l).prop('disabled', false);
+                $('#degree').html(g).prop('disabled', false);
+            })
+            .fail(function(xhr) {
+                setMsg('Error — try again');
+                console.error(xhr.status, xhr.responseText);
+            });
+    }
+
+    $('#university_id').on('change', function() {
+        var id = $(this).val();
+        id ? load(id, '', '', '') : setMsg('Select University first');
+    });
+
+    var oldUni = '{{ old("university_id") }}';
+    if (oldUni) {
+        load(oldUni, oldDept, oldLang, oldDeg);
+    } else {
+        setMsg('Select University first');
+    }
+});
 </script>
 @endsection

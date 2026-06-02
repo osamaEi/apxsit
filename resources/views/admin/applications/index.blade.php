@@ -23,263 +23,240 @@
                 </div>
 
                 <div class="card-body">
+
+                    @php
+                        $fUniversity = request('university_id', []);
+                        $fDepartment = request('department', []);
+                        $fDegree     = request('degree', []);
+                        $fStudent    = request('student_id');
+                        $fStatus     = request('status');
+                        $hasFilter   = $fStudent || !empty($fUniversity) || !empty($fDepartment) || !empty($fDegree) || $fStatus;
+                    @endphp
+
+                    <style>
+                    .fd-wrap { position:relative; }
+                    .fd-btn {
+                        display:flex; align-items:center; justify-content:space-between;
+                        height:38px; padding:0 12px; border:1px solid #ced4da; border-radius:4px;
+                        background:#fff; cursor:pointer; font-size:.875rem; color:#495057;
+                        white-space:nowrap; overflow:hidden; user-select:none; gap:6px; width:100%;
+                    }
+                    .fd-btn:hover { border-color:#adb5bd; background:#f8f9fa; }
+                    .fd-btn .fd-label { overflow:hidden; text-overflow:ellipsis; flex:1; text-align:left; }
+                    .fd-btn .fd-caret { font-size:10px; color:#888; flex-shrink:0; }
+                    .fd-btn.has-value { border-color:#4e73df; color:#4e73df; background:#f0f3ff; }
+                    .fd-panel {
+                        display:none; position:absolute; top:calc(100% + 4px); left:0;
+                        min-width:100%; background:#fff; border:1px solid #ced4da;
+                        border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,.12);
+                        z-index:9999; padding:8px 0;
+                    }
+                    .fd-panel.open { display:block; }
+                    .fd-search {
+                        margin:0 8px 6px; padding:5px 8px; border:1px solid #dee2e6;
+                        border-radius:4px; font-size:.8rem; width:calc(100% - 16px); box-sizing:border-box;
+                    }
+                    .fd-list { max-height:200px; overflow-y:auto; }
+                    .fd-item { display:flex; align-items:center; padding:5px 12px; cursor:pointer; font-size:.85rem; gap:8px; }
+                    .fd-item:hover { background:#f8f9fa; }
+                    .fd-item input { accent-color:#4e73df; flex-shrink:0; cursor:pointer; }
+                    .fd-item.checked { background:#f0f3ff; }
+                    .fd-divider { border:none; border-top:1px solid #f0f0f0; margin:4px 0; }
+                    </style>
+
                     <!-- Filters -->
-                    <form method="GET" action="{{ route('admin.applications.index') }}" class="mb-4">
-                        <div class="row">
-                            <!-- Student Filter -->
+                    <form method="GET" action="{{ route('admin.applications.index') }}" id="filterForm" class="mb-4">
+                        <div class="row align-items-end">
+
+                            {{-- Student --}}
                             <div class="col-lg-3 col-md-6 mb-2">
-                                <div class="input-group">
-                                    <select name="student_id" class="form-control select2">
-                                        <option value="">All Students</option>
-                                        @foreach($students as $student)
-                                            <option value="{{ $student->id }}" {{ request('student_id') == $student->id ? 'selected' : '' }}>
-                                                {{ $student->first_name }} {{ $student->last_name }} (#{{ $student->id }})
-                                            </option>
+                                <label class="small font-weight-bold mb-1">Student</label>
+                                <select name="student_id" id="studentSelect" class="form-control" style="height:38px;">
+                                    <option value="">All Students</option>
+                                    @foreach($students as $student)
+                                        <option value="{{ $student->id }}" {{ $fStudent == $student->id ? 'selected' : '' }}>
+                                            {{ $student->first_name }} {{ $student->last_name }} (#{{ $student->id }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- University --}}
+                            <div class="col-lg-3 col-md-6 mb-2 fd-wrap" id="wrap-university">
+                                <label class="small font-weight-bold mb-1">University</label>
+                                <div class="fd-btn {{ !empty($fUniversity) ? 'has-value' : '' }}" onclick="toggleFd('fd-university')">
+                                    <span class="fd-label" id="lbl-university">
+                                        {{ !empty($fUniversity) ? count($fUniversity).' selected' : 'All Universities' }}
+                                    </span>
+                                    <i class="fas fa-chevron-down fd-caret"></i>
+                                </div>
+                                <div class="fd-panel" id="fd-university">
+                                    <input class="fd-search" placeholder="Search..." oninput="fdSearch(this,'fd-university')">
+                                    <label class="fd-item" style="font-weight:600; font-size:.8rem; color:#888;">
+                                        <input type="checkbox" onchange="fdSelectAll(this,'university_id[]','lbl-university','All Universities')"> Select All
+                                    </label>
+                                    <hr class="fd-divider">
+                                    <div class="fd-list">
+                                        @foreach($universities as $uni)
+                                        <label class="fd-item {{ in_array($uni->id, $fUniversity) ? 'checked' : '' }}">
+                                            <input type="checkbox" name="university_id[]" value="{{ $uni->id }}"
+                                                {{ in_array($uni->id, $fUniversity) ? 'checked' : '' }}
+                                                onchange="fdUpdate('fd-university','lbl-university','All Universities')">
+                                            {{ $uni->name }}
+                                        </label>
                                         @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- University Filter -->
-                            <div class="col-lg-3 col-md-6 mb-2">
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-left" type="button" id="universityDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        {{ !empty(request('university_id')) ? count(request('university_id')) . ' Universities Selected' : 'All Universities' }}
-                                    </button>
-                                    <div class="dropdown-menu w-100 p-3" aria-labelledby="universityDropdown">
-                                        <div class="mb-2">
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="selectAllUniversities">
-                                                <label class="custom-control-label" for="selectAllUniversities">Select All</label>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown-divider"></div>
-                                        <div style="max-height: 200px; overflow-y: auto;">
-                                            @foreach(App\Models\University::where('is_active', true)->orderBy('name')->get() as $university)
-                                                <div class="custom-control custom-checkbox mb-2">
-                                                    <input type="checkbox" class="custom-control-input university-checkbox" 
-                                                        name="university_id[]" 
-                                                        id="university{{ $university->id }}" 
-                                                        value="{{ $university->id }}"
-                                                        {{ (is_array(request('university_id')) && in_array($university->id, request('university_id'))) ? 'checked' : '' }}>
-                                                    <label class="custom-control-label" for="university{{ $university->id }}">
-                                                        {{ $university->name }}
-                                                    </label>
-                                                </div>
-                                            @endforeach
-                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Department Filter -->
-                            <div class="col-lg-2 col-md-6 mb-2">
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-left" type="button" id="departmentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        {{ !empty(request('department')) ? count(request('department')) . ' Departments Selected' : 'All Departments' }}
-                                    </button>
-                                    <div class="dropdown-menu w-100 p-3" aria-labelledby="departmentDropdown">
-                                        <div class="mb-2">
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="selectAllDepartments">
-                                                <label class="custom-control-label" for="selectAllDepartments">Select All</label>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown-divider"></div>
-                                        <div style="max-height: 200px; overflow-y: auto;">
-                                            @foreach(App\Models\Department::orderBy('name')->get() as $department)
-                                                <div class="custom-control custom-checkbox mb-2">
-                                                    <input type="checkbox" class="custom-control-input department-checkbox" 
-                                                        name="department[]" 
-                                                        id="department{{ $loop->index }}" 
-                                                        value="{{ $department->name }}"
-                                                        {{ (is_array(request('department')) && in_array($department->name, request('department'))) ? 'checked' : '' }}>
-                                                    <label class="custom-control-label" for="department{{ $loop->index }}">
-                                                        {{ $department->name }}
-                                                    </label>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
+
+                            {{-- Department --}}
+                            <div class="col-lg-2 col-md-4 mb-2 fd-wrap" id="wrap-department">
+                                <label class="small font-weight-bold mb-1">Department</label>
+                                <div class="fd-btn {{ !empty($fDepartment) ? 'has-value' : '' }}" onclick="toggleFd('fd-department')">
+                                    <span class="fd-label" id="lbl-department">
+                                        {{ !empty($fDepartment) ? count($fDepartment).' selected' : 'All Departments' }}
+                                    </span>
+                                    <i class="fas fa-chevron-down fd-caret"></i>
                                 </div>
-                            </div>
-                            
-                            <!-- Degree Filter -->
-                            <div class="col-lg-2 col-md-6 mb-2">
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-left" type="button" id="degreeDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        {{ !empty(request('degree')) ? count(request('degree')) . ' Degrees Selected' : 'All Degrees' }}
-                                    </button>
-                                    <div class="dropdown-menu w-100 p-3" aria-labelledby="degreeDropdown">
-                                        <div class="mb-2">
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="selectAllDegrees">
-                                                <label class="custom-control-label" for="selectAllDegrees">Select All</label>
-                                            </div>
-                                        </div>
-                                        <div class="dropdown-divider"></div>
-                                        <div style="max-height: 200px; overflow-y: auto;">
-                                            @foreach(App\Models\Degree::orderBy('name')->get() as $degree)
-                                                <div class="custom-control custom-checkbox mb-2">
-                                                    <input type="checkbox" class="custom-control-input degree-checkbox" 
-                                                        name="degree[]" 
-                                                        id="degree{{ $loop->index }}" 
-                                                        value="{{ $degree->name }}"
-                                                        {{ (is_array(request('degree')) && in_array($degree->name, request('degree'))) ? 'checked' : '' }}>
-                                                    <label class="custom-control-label" for="degree{{ $loop->index }}">
-                                                        {{ $degree->name }}
-                                                    </label>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Status Filter -->
-                            <div class="col-lg-2 col-md-4 mb-2">
-                                <div class="input-group">
-                                    <select name="status" class="form-control">
-                                        <option value="">All Statuses</option>
-                                        @foreach(App\Models\Application::STATUSES as $statusKey => $statusValue)
-                                            <option value="{{ $statusKey }}" {{ request('status') == $statusKey ? 'selected' : '' }}>
-                                                {{ $statusValue }}
-                                            </option>
+                                <div class="fd-panel" id="fd-department">
+                                    <input class="fd-search" placeholder="Search..." oninput="fdSearch(this,'fd-department')">
+                                    <label class="fd-item" style="font-weight:600; font-size:.8rem; color:#888;">
+                                        <input type="checkbox" onchange="fdSelectAll(this,'department[]','lbl-department','All Departments')"> Select All
+                                    </label>
+                                    <hr class="fd-divider">
+                                    <div class="fd-list">
+                                        @foreach($departments as $dept)
+                                        <label class="fd-item {{ in_array($dept->name, $fDepartment) ? 'checked' : '' }}">
+                                            <input type="checkbox" name="department[]" value="{{ $dept->name }}"
+                                                {{ in_array($dept->name, $fDepartment) ? 'checked' : '' }}
+                                                onchange="fdUpdate('fd-department','lbl-department','All Departments')">
+                                            {{ $dept->name }}
+                                        </label>
                                         @endforeach
-                                    </select>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <!-- Filter Buttons -->
-                            <div class="col-lg-12 mt-2 text-right">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search mr-1"></i> Search
-                                </button>
-                                <a href="{{ route('admin.applications.index') }}" class="btn btn-secondary ml-2">
-                                    <i class="fas fa-redo mr-1"></i> Reset
-                                </a>
-                                <div class="btn-group ml-2">
-                                    <a href="{{ route('admin.applications.export-excel', request()->all()) }}" class="btn btn-success">
-                                        <i class="fas fa-file-excel mr-1"></i> Excel
+
+                            {{-- Degree --}}
+                            <div class="col-lg-1 col-md-4 mb-2 fd-wrap" id="wrap-degree">
+                                <label class="small font-weight-bold mb-1">Degree</label>
+                                <div class="fd-btn {{ !empty($fDegree) ? 'has-value' : '' }}" onclick="toggleFd('fd-degree')">
+                                    <span class="fd-label" id="lbl-degree">
+                                        {{ !empty($fDegree) ? count($fDegree).' selected' : 'All Degrees' }}
+                                    </span>
+                                    <i class="fas fa-chevron-down fd-caret"></i>
+                                </div>
+                                <div class="fd-panel" id="fd-degree">
+                                    <div class="fd-list">
+                                        @foreach($degrees as $deg)
+                                        <label class="fd-item {{ in_array($deg->name, $fDegree) ? 'checked' : '' }}">
+                                            <input type="checkbox" name="degree[]" value="{{ $deg->name }}"
+                                                {{ in_array($deg->name, $fDegree) ? 'checked' : '' }}
+                                                onchange="fdUpdate('fd-degree','lbl-degree','All Degrees')">
+                                            {{ $deg->name }}
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Status --}}
+                            <div class="col-lg-1 col-md-4 mb-2">
+                                <label class="small font-weight-bold mb-1">Status</label>
+                                <select name="status" class="form-control" style="height:38px; font-size:.875rem;">
+                                    <option value="">All</option>
+                                    @foreach(App\Models\Application::STATUSES as $sk => $sv)
+                                        <option value="{{ $sk }}" {{ $fStatus == $sk ? 'selected' : '' }}>{{ $sv }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Buttons --}}
+                            <div class="col-lg-2 col-md-12 mb-2">
+                                <label class="small font-weight-bold mb-1 d-block">&nbsp;</label>
+                                <div class="d-flex" style="gap:6px; flex-wrap:wrap;">
+                                    <button type="submit" class="btn btn-primary btn-sm" style="height:38px;">
+                                        <i class="fas fa-search mr-1"></i> Search
+                                    </button>
+                                    <a href="{{ route('admin.applications.index') }}" class="btn btn-secondary btn-sm" style="height:38px;">
+                                        <i class="fas fa-redo"></i>
                                     </a>
-                                    <a href="{{ route('admin.applications.export-pdf', request()->all()) }}" class="btn btn-danger">
-                                        <i class="fas fa-file-pdf mr-1"></i> PDF
+                                    <a href="{{ route('admin.applications.export-excel', request()->all()) }}" class="btn btn-success btn-sm" style="height:38px;" title="Export Excel">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
+                                    <a href="{{ route('admin.applications.export-pdf', request()->all()) }}" class="btn btn-danger btn-sm" style="height:38px;" title="Export PDF">
+                                        <i class="fas fa-file-pdf"></i>
                                     </a>
                                 </div>
                             </div>
                         </div>
+
+                        {{-- Active filter tags --}}
+                        @if($hasFilter)
+                        <div class="d-flex flex-wrap align-items-center mt-2" style="gap:6px;">
+                            <small class="text-muted">Active:</small>
+                            @if($fStudent)
+                                @php $st = $students->firstWhere('id', $fStudent); @endphp
+                                @if($st) <span class="badge badge-primary">{{ $st->first_name }} {{ $st->last_name }}</span> @endif
+                            @endif
+                            @foreach($universities->whereIn('id', $fUniversity) as $u)
+                                <span class="badge badge-info">{{ $u->name }}</span>
+                            @endforeach
+                            @foreach($fDepartment as $d)
+                                <span class="badge badge-secondary">{{ $d }}</span>
+                            @endforeach
+                            @foreach($fDegree as $d)
+                                <span class="badge badge-success">{{ $d }}</span>
+                            @endforeach
+                            @if($fStatus)
+                                <span class="badge badge-warning">{{ App\Models\Application::STATUSES[$fStatus] ?? $fStatus }}</span>
+                            @endif
+                            <a href="{{ route('admin.applications.index') }}" class="text-danger" style="font-size:.8rem;">
+                                <i class="fas fa-times-circle"></i> Clear all
+                            </a>
+                        </div>
+                        @endif
                     </form>
-                    
-                    <style>
-                        /* Bootstrap dropdown styles */
-                        .dropdown-menu {
-                            max-height: 300px;
-                            overflow-y: auto;
-                            width: 100%;
-                            z-index: 1050;
-                        }
-                        
-                        /* Keep dropdown open when clicking inside */
-                        .dropdown-menu.show {
-                            display: block;
-                        }
-                        
-                        /* Custom checkbox spacing */
-                        .custom-checkbox {
-                            margin-bottom: 8px;
-                        }
-                    </style>
-                    
+
                     <script>
-                    $(document).ready(function() {
-                        // Initialize Select2
-                        $('.select2').select2({
-                            theme: 'bootstrap4',
-                            width: '100%'
-                        });
-                        
-                        // Prevent dropdown from closing when clicking inside
-                        $('.dropdown-menu').on('click', function(e) {
-                            e.stopPropagation();
-                        });
-                        
-                        // Update button text based on selections
-                        function updateDropdownText(checkboxClass, buttonId) {
-                            var selectedCount = $('.' + checkboxClass + ':checked').length;
-                            var text = 'All Universities';
-                            
-                            if (buttonId === 'departmentDropdown') {
-                                text = 'All Departments';
-                            } else if (buttonId === 'degreeDropdown') {
-                                text = 'All Degrees';
-                            }
-                            
-                            if (selectedCount > 0) {
-                                text = selectedCount + ' ' + 
-                                      (buttonId === 'universityDropdown' ? 'Universities' : 
-                                       buttonId === 'departmentDropdown' ? 'Departments' : 'Degrees') + 
-                                      ' Selected';
-                            }
-                            
-                            $('#' + buttonId).text(text);
+                    // Close panels on outside click
+                    document.addEventListener('click', function(e) {
+                        if (!e.target.closest('.fd-wrap')) {
+                            document.querySelectorAll('.fd-panel.open').forEach(p => p.classList.remove('open'));
                         }
-                        
-                        // Handle "Select All" checkboxes
-                        $('#selectAllUniversities').on('change', function() {
-                            $('.university-checkbox').prop('checked', $(this).prop('checked'));
-                            updateDropdownText('university-checkbox', 'universityDropdown');
-                        });
-                        
-                        $('#selectAllDepartments').on('change', function() {
-                            $('.department-checkbox').prop('checked', $(this).prop('checked'));
-                            updateDropdownText('department-checkbox', 'departmentDropdown');
-                        });
-                        
-                        $('#selectAllDegrees').on('change', function() {
-                            $('.degree-checkbox').prop('checked', $(this).prop('checked'));
-                            updateDropdownText('degree-checkbox', 'degreeDropdown');
-                        });
-                        
-                        // Update "Select All" checkbox when individual checkboxes change
-                        $(document).on('change', '.university-checkbox', function() {
-                            var allChecked = $('.university-checkbox:checked').length === $('.university-checkbox').length;
-                            $('#selectAllUniversities').prop('checked', allChecked);
-                            updateDropdownText('university-checkbox', 'universityDropdown');
-                        });
-                        
-                        $(document).on('change', '.department-checkbox', function() {
-                            var allChecked = $('.department-checkbox:checked').length === $('.department-checkbox').length;
-                            $('#selectAllDepartments').prop('checked', allChecked);
-                            updateDropdownText('department-checkbox', 'departmentDropdown');
-                        });
-                        
-                        $(document).on('change', '.degree-checkbox', function() {
-                            var allChecked = $('.degree-checkbox:checked').length === $('.degree-checkbox').length;
-                            $('#selectAllDegrees').prop('checked', allChecked);
-                            updateDropdownText('degree-checkbox', 'degreeDropdown');
-                        });
-                        
-                        // Initialize dropdown text and "Select All" checkboxes
-                        updateDropdownText('university-checkbox', 'universityDropdown');
-                        updateDropdownText('department-checkbox', 'departmentDropdown');
-                        updateDropdownText('degree-checkbox', 'degreeDropdown');
-                        
-                        // Check "Select All" if all are selected
-                        $('#selectAllUniversities').prop('checked', 
-                            $('.university-checkbox:checked').length === $('.university-checkbox').length && 
-                            $('.university-checkbox').length > 0
-                        );
-                        
-                        $('#selectAllDepartments').prop('checked', 
-                            $('.department-checkbox:checked').length === $('.department-checkbox').length && 
-                            $('.department-checkbox').length > 0
-                        );
-                        
-                        $('#selectAllDegrees').prop('checked', 
-                            $('.degree-checkbox:checked').length === $('.degree-checkbox').length && 
-                            $('.degree-checkbox').length > 0
-                        );
                     });
+                    function toggleFd(id) {
+                        const p = document.getElementById(id);
+                        const was = p.classList.contains('open');
+                        document.querySelectorAll('.fd-panel.open').forEach(x => x.classList.remove('open'));
+                        if (!was) p.classList.add('open');
+                    }
+                    function fdSearch(input, panelId) {
+                        const q = input.value.toLowerCase();
+                        document.querySelectorAll('#' + panelId + ' .fd-list .fd-item').forEach(item => {
+                            item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+                        });
+                    }
+                    function fdUpdate(panelId, lblId, placeholder) {
+                        const checked = document.querySelectorAll('#' + panelId + ' input[type=checkbox]:checked:not([onchange*="SelectAll"])');
+                        const lbl = document.getElementById(lblId);
+                        const btn = document.getElementById(panelId).previousElementSibling;
+                        if (checked.length === 0) {
+                            lbl.textContent = placeholder;
+                            btn.classList.remove('has-value');
+                        } else {
+                            lbl.textContent = checked.length + ' selected';
+                            btn.classList.add('has-value');
+                        }
+                        document.querySelectorAll('#' + panelId + ' .fd-list .fd-item').forEach(item => {
+                            item.classList.toggle('checked', item.querySelector('input') && item.querySelector('input').checked);
+                        });
+                    }
+                    function fdSelectAll(cb, name, lblId, placeholder) {
+                        const panel = cb.closest('.fd-panel');
+                        panel.querySelectorAll('input[name="' + name + '"]').forEach(c => c.checked = cb.checked);
+                        fdUpdate(panel.id, lblId, placeholder);
+                    }
                     </script>
                     <!-- Applications Table -->
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -434,50 +411,14 @@
         min-height: 38px;
     }
 </style>
-<!-- jQuery first (required for Bootstrap 4) -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
-<!-- Popper.js (required for dropdown functionality) -->
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
 <script>
-$(document).ready(function() {
-    // Initialize Select2 Elements
-    $('.select2').select2({
+$(function() {
+    // Student select2
+    $('#studentSelect').select2({
         theme: 'bootstrap4',
         width: '100%',
-        placeholder: 'Select options',
+        placeholder: 'All Students',
         allowClear: true
-    });
-    
-    // Setup CSRF for all AJAX requests
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-    
-    // Delete modal setup
-    $('.delete-btn').on('click', function() {
-        const url = $(this).data('url');
-        $('#delete-form').attr('action', url);
-    });
-    
-    // DataTable initialization with export buttons
-    $('#applications-table').DataTable({
-        dom: 'Bfrtip',
-        buttons: [
-            'copy', 'csv', 'excel', 'pdf', 'print'
-        ],
-        "order": [[0, "desc"]],
-        "pageLength": 25,
-        "responsive": true,
-        "stateSave": true,
-        "columnDefs": [
-            { "orderable": false, "targets": 9 }
-        ]
     });
 });
 </script>

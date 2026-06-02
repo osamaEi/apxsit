@@ -122,6 +122,15 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Program Routes
     Route::get('programs/toggle-status/{program}', [ProgramController::class, 'toggleStatus'])->name('programs.toggle-status');
     Route::resource('programs', ProgramController::class);
+    // AJAX: get departments/languages/degrees for a university from programs
+    Route::get('programs/by-university/{universityId}', function ($universityId) {
+        $programs = \App\Models\Program::where('university_id', $universityId);
+        return response()->json([
+            'departments' => $programs->clone()->distinct()->orderBy('department')->pluck('department'),
+            'languages'   => $programs->clone()->distinct()->orderBy('language')->pluck('language'),
+            'degrees'     => $programs->clone()->distinct()->orderBy('degree')->pluck('degree'),
+        ]);
+    })->name('programs.by-university');
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {

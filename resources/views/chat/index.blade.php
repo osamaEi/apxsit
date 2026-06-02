@@ -252,12 +252,14 @@
     {{-- ── Chat Main ── --}}
     <div class="chat-main">
         {{-- Topbar --}}
-        <div class="chat-topbar">
-            <div class="no-chat-selected d-flex align-items-center gap-2 text-muted" style="gap:.5rem;">
+        <div class="chat-topbar" style="position:relative;">
+            {{-- shown only when no conversation selected --}}
+            <div id="noChatSelected" class="d-flex align-items-center text-muted" style="gap:.5rem; display:none !important;">
                 <i class="fas fa-comments fa-lg" style="color:#ddd;"></i>
                 <span style="font-size:.9rem;">Select a conversation to start chatting</span>
             </div>
-            <div class="chat-header-content d-none d-flex align-items-center justify-content-between w-100">
+            {{-- shown only when a conversation is active --}}
+            <div id="chatHeaderContent" style="display:none; width:100%; align-items:center; justify-content:space-between;">
                 <div class="d-flex align-items-center" style="gap:10px;">
                     <div class="conv-avatar" id="headerAvatar"></div>
                     <div>
@@ -270,12 +272,7 @@
         </div>
 
         {{-- Messages --}}
-        <div class="chat-messages" id="messages-container">
-            <div class="no-conv">
-                <i class="fas fa-comment-dots"></i>
-                <p>No conversation selected</p>
-            </div>
-        </div>
+        <div class="chat-messages" id="messages-container"></div>
 
         {{-- Input --}}
         <div class="chat-inputbar d-none" id="chatInputBar">
@@ -449,9 +446,13 @@ $(document).ready(function() {
 
                 let last = '';
                 if (c.last_message) {
+                    const body = c.last_message.body || '';
+                    // Skip token-like strings (long, no spaces)
+                    const isToken = body.length > 40 && !body.includes(' ');
                     last = c.last_message.message_type === 'voice' ? '🎤 Voice'
                          : c.last_message.attachment ? '📎 File'
-                         : (c.last_message.body || '').substring(0, 28);
+                         : isToken ? '💬 Message'
+                         : body.substring(0, 35);
                 }
 
                 html += `<li class="conv-item ${active} conversation-item" data-conversation-id="${c.id}" data-is-group="${c.is_group}">
@@ -472,6 +473,9 @@ $(document).ready(function() {
         activeConversationIsGroup = $(this).data('is-group');
         $('.conversation-item').removeClass('active');
         $(this).addClass('active');
+        // Hide placeholder immediately — don't wait for AJAX
+        $('#noChatSelected').hide();
+        $('#chatInputBar').removeClass('d-none');
         loadConversation(activeConversationId);
         loadMessages(activeConversationId);
     });
@@ -481,8 +485,8 @@ $(document).ready(function() {
             renderHeader(r.conversation);
             $('#conversation-id').val(id);
             $('#chatInputBar').removeClass('d-none');
-            $('.no-chat-selected').addClass('d-none');
-            $('.chat-header-content').removeClass('d-none');
+            $('#noChatSelected').hide();
+            $('#chatHeaderContent').css('display','flex');
         });
     }
 
@@ -529,7 +533,7 @@ $(document).ready(function() {
 
     function renderMessages(messages) {
         if (!messages.length) {
-            $('#messages-container').html('<div class="no-conv"><i class="fas fa-comment-dots"></i><p>No messages yet — say hi!</p></div>');
+            $('#messages-container').html('');
             return;
         }
         let html = '', curDate = null;
@@ -716,9 +720,9 @@ $(document).ready(function() {
             $('#groupInfoModal').modal('hide');
             if (activeConversationId == id) {
                 activeConversationId = null;
-                $('.no-chat-selected').removeClass('d-none');
-                $('.chat-header-content').addClass('d-none');
-                $('#messages-container').html('<div class="no-conv"><i class="fas fa-comment-dots"></i><p>No conversation selected</p></div>');
+                $('#noChatSelected').show();
+                $('#chatHeaderContent').hide();
+                $('#messages-container').html('');
                 $('#chatInputBar').addClass('d-none');
             }
             loadConversations();
