@@ -1,0 +1,572 @@
+{{-- resources/views/auth/login.blade.php --}}
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>DEVA Education - Login</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        :root {
+            --primary: #FF4A60;
+            --primary-hover: #E0394D;
+            --secondary: #7a0066cb;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --light-gray: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --deva-purple: #7a0066cb;
+            --deva-coral: #FF4A60;
+            --deva-gray: #f2f2f2;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .login-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .login-image {
+            width: 55%;
+            background-color: var(--deva-purple);
+            background-image: linear-gradient(135deg, var(--deva-purple) 0%, rgba(142, 41, 137, 0.8) 100%);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 3rem;
+        }
+        
+        .login-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+        }
+        
+        .image-content {
+            position: relative;
+            color: white;
+            max-width: 500px;
+        }
+        
+        .image-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .image-content p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .brand {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .brand-logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-form {
+            width: 45%;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            background-color: var(--deva-gray);
+        }
+        
+        .form-container {
+            max-width: 420px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .form-header {
+            margin-bottom: 2.5rem;
+        }
+        
+        .form-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--dark);
+            background: linear-gradient(to right, var(--deva-coral), var(--deva-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        
+        .form-header p {
+            color: var(--gray);
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--deva-coral);
+            box-shadow: 0 0 0 3px rgba(255, 74, 96, 0.15), 0 0 0 1px rgba(142, 41, 137, 0.2);
+        }
+        
+        .input-error {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .remember-forgot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox {
+            width: 1rem;
+            height: 1rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            border: 1px solid var(--light-gray);
+            accent-color: var(--deva-coral);
+        }
+        
+        .remember-text {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+        
+        .forgot-link {
+            font-size: 0.875rem;
+            color: var(--deva-coral);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .forgot-link:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, var(--deva-coral) 0%, var(--deva-purple) 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(142, 41, 137, 0.2);
+        }
+        
+        .login-button:hover {
+            background: linear-gradient(135deg, var(--deva-coral) 20%, var(--deva-purple) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(142, 41, 137, 0.3);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+        
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--light-gray);
+        }
+        
+        .divider::before {
+            margin-right: 1rem;
+        }
+        
+        .divider::after {
+            margin-left: 1rem;
+        }
+        
+        .social-login {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .social-button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 0.5rem;
+            background-color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .social-button:hover {
+            background-color: var(--light);
+        }
+        
+        .social-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        .register-link-container {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        .register-link {
+            color: var(--deva-coral);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .register-link:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Role switcher */
+        .role-switcher {
+            display: flex;
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 2rem;
+            gap: 4px;
+        }
+        .role-btn {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+        .role-btn.active {
+            background: white;
+            color: var(--deva-purple);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-weight: 600;
+        }
+        .role-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+            color: var(--dark);
+        }
+        
+        .session-status {
+            background-color: var(--success);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .status-close {
+            cursor: pointer;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .small-logo {
+            width: 120px;
+            height: auto;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 1024px) {
+            .login-image {
+                width: 45%;
+                padding: 2rem;
+            }
+            
+            .login-form {
+                width: 55%;
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .login-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .login-image {
+                width: 100%;
+                height: 35vh;
+                min-height: 300px;
+                padding: 1.5rem;
+            }
+            
+            .login-form {
+                width: 100%;
+                padding: 2rem 1.5rem;
+            }
+            
+            .form-container {
+                max-width: 100%;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body:not(.light-mode) {
+                --light: #0f172a;
+                --dark: #f8fafc;
+                --light-gray: #334155;
+                background-color: var(--light);
+                color: var(--dark);
+            }
+            
+            body:not(.light-mode) .input-field {
+                background-color: #1e293b;
+                color: var(--dark);
+            }
+            
+            body:not(.light-mode) .social-button {
+                background-color: #1e293b;
+                color: var(--dark);
+            }
+            
+            body:not(.light-mode) .social-button:hover {
+                background-color: #334155;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-image">
+            <div class="brand">
+                <img src="{{ asset('logo2.jpg') }}" alt="DEVA Education" class="brand-logo">
+            </div>
+            <div class="image-content">
+                <h2>Welcome to DEVA Education</h2>
+                <p>Access your dashboard to manage courses, track student progress, monitor registrations, and accomplish your daily tasks with our streamlined platform.</p>
+            </div>
+        </div>
+        
+        <div class="login-form">
+            <div class="form-container">
+                <!-- Logo -->
+                <div style="text-align:center; margin-bottom:1.5rem;">
+                    <img src="{{ asset('logo2.jpg') }}" alt="DEVA Education" style="height:70px; width:auto; border-radius:8px;">
+                </div>
+
+                <!-- Role Switcher — shown first -->
+                <div class="role-switcher">
+                    <button type="button" class="role-btn active" id="btnAdmin" onclick="switchRole('admin')">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm4 8c0 1-1 1-1 1H5s-1 0-1-1 1-4 4-4 4 3 4 4z"/><path fill-rule="evenodd" d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0z"/></svg>
+                        Admin
+                    </button>
+                    <button type="button" class="role-btn" id="btnStudent" onclick="switchRole('student')">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5z"/></svg>
+                        Student
+                    </button>
+                </div>
+
+                <div class="form-header">
+                    <h1 id="formTitle">Sign in as Admin</h1>
+                    <p id="formSubtitle">Enter your admin credentials to access the dashboard</p>
+                </div>
+
+                @if (session('status'))
+                    <div class="session-status">
+                        {{ session('status') }}
+                        <span class="status-close">&times;</span>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('login') }}" id="loginForm">
+                    @csrf
+                    
+                    <div class="input-group">
+                        <label for="email" class="input-label">Email address</label>
+                        <input id="email" class="input-field" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" />
+                        @error('email')
+                            <div class="input-error">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password" class="input-label">Password</label>
+                        <input id="password" class="input-field" type="password" name="password" required autocomplete="current-password" />
+                        @error('password')
+                            <div class="input-error">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="remember-forgot">
+                        <div class="remember-me">
+                            <input id="remember_me" type="checkbox" class="checkbox" name="remember">
+                            <label for="remember_me" class="remember-text">Remember me</label>
+                        </div>
+                        
+                        {{-- @if (Route::has('password.request'))
+                            <a class="forgot-link" href="{{ route('password.request') }}">
+                                Forgot password?
+                            </a>
+                        @endif --}}
+                    </div>
+                    
+                    <button type="submit" class="login-button" id="submitBtn">
+                        Sign in as Admin
+                    </button>
+                </form>
+
+                <div style="text-align:center; margin-top:1rem;">
+                    <a href="{{ route('student.login.view') }}" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.875rem; color:#7a0066; text-decoration:none; font-weight:500; padding:0.5rem 1.25rem; border:1.5px solid #7a0066; border-radius:8px; transition:all 0.2s;" id="studentLoginLink">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5z"/></svg>
+                        Sign in as Student instead
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const ROUTES = {
+            admin:   '{{ route('login') }}',
+            student: '{{ route('student.login') }}'
+        };
+
+        function switchRole(role) {
+            const form      = document.getElementById('loginForm');
+            const btnAdmin  = document.getElementById('btnAdmin');
+            const btnStudent= document.getElementById('btnStudent');
+            const title     = document.getElementById('formTitle');
+            const subtitle  = document.getElementById('formSubtitle');
+            const submitBtn = form.querySelector('.login-button');
+
+            form.action = ROUTES[role];
+
+            if (role === 'admin') {
+                btnAdmin.classList.add('active');
+                btnStudent.classList.remove('active');
+                title.textContent    = 'Sign in as Admin';
+                subtitle.textContent = 'Enter your admin credentials to access the dashboard';
+                submitBtn.textContent = 'Sign in as Admin';
+            } else {
+                btnStudent.classList.add('active');
+                btnAdmin.classList.remove('active');
+                title.textContent    = 'Sign in as Student';
+                subtitle.textContent = 'Enter your student credentials to access your portal';
+                submitBtn.textContent = 'Sign in as Student';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusClose = document.querySelector('.status-close');
+            if (statusClose) {
+                statusClose.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
