@@ -29,42 +29,48 @@ class ProgramsExport implements FromCollection, WithHeadings, WithMapping, WithS
             'Department',
             'Degree',
             'Language',
-            'Price Before Discount ($)',
-            'Price After Discount ($)',
-            'Discount (%)',
-            'Status'
+            'Price Before Discount',
+            'Price After Discount',
+            'Cash Discount',
+            'Deposit Payment',
+            'Siblings Discount',
+            'Shift Type',
+            'Status',
         ];
     }
 
     public function map($program): array
     {
         return [
-            $program->university->name ?? 'N/A',
+            $program->university->name ?? '',
             $program->department,
             $program->degree,
             $program->language,
-            number_format($program->before_discount, 2),
-            number_format($program->after_discount, 2),
-            $program->discount_percentage . '%',
-            $program->status
+            (float) $program->before_discount,
+            (float) $program->after_discount,
+            (float) $program->cash_discount,
+            (float) $program->deposit_payment,
+            (float) $program->siblings_discount,
+            $program->shift_type,
+            $program->status,
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         return [
-            // Style the first row as bold text
-            1 => ['font' => ['bold' => true]],
-            
-            // Set column widths
-            'A' => ['width' => 30],
-            'B' => ['width' => 30],
-            'C' => ['width' => 15],
-            'D' => ['width' => 15],
-            'E' => ['width' => 20],
-            'F' => ['width' => 20],
-            'G' => ['width' => 15],
-            'H' => ['width' => 15],
+            1    => ['font' => ['bold' => true]],
+            'A'  => ['width' => 30],
+            'B'  => ['width' => 30],
+            'C'  => ['width' => 15],
+            'D'  => ['width' => 15],
+            'E'  => ['width' => 22],
+            'F'  => ['width' => 22],
+            'G'  => ['width' => 18],
+            'H'  => ['width' => 18],
+            'I'  => ['width' => 18],
+            'J'  => ['width' => 15],
+            'K'  => ['width' => 15],
         ];
     }
 }
