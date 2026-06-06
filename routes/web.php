@@ -124,6 +124,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     // Program AJAX routes — must be before resource() to avoid {program} wildcard swallowing them
     Route::get('programs/toggle-status/{program}', [ProgramController::class, 'toggleStatus'])->name('programs.toggle-status');
+    Route::delete('programs/delete-all', [ProgramController::class, 'destroyAll'])->name('programs.destroy-all');
     Route::get('programs/by-university/{universityId}', function ($universityId) {
         $programs = \App\Models\Program::where('university_id', $universityId);
         return response()->json([

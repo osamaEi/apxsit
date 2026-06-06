@@ -47,14 +47,46 @@
         <button type="button" class="btn btn-warning btn-sm mr-1" data-toggle="modal" data-target="#importModal">
             <i class="fas fa-file-import mr-1"></i> Import Excel
         </button>
-        <a href="{{ route('admin.programs.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('admin.programs.create') }}" class="btn btn-primary btn-sm mr-1">
             <i class="fas fa-plus mr-1"></i> Add Program
         </a>
+        @endif
+        @if(auth()->user()->role == 'Admin')
+        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteAllModal">
+            <i class="fas fa-trash mr-1"></i> Delete All
+        </button>
         @endif
     </div>
 </div>
 
 <!-- Import Modal -->
+@if(auth()->user()->role == 'Admin')
+<div class="modal fade" id="deleteAllModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle mr-1"></i> Delete All Programs</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to <strong>delete all {{ $totalPrograms }} programs</strong>?</p>
+                <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form action="{{ route('admin.programs.destroy-all') }}" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash mr-1"></i> Yes, Delete All
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @if(auth()->user()->role == 'Admin' || auth()->user()->role == 'Register' )
 <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

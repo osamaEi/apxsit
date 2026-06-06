@@ -424,6 +424,15 @@ public function exportPdf(Request $request)
             ->with('success', 'Program deleted successfully.');
     }
 
+    public function destroyAll()
+    {
+        $count = Program::count();
+        Program::truncate();
+
+        return redirect()->route('admin.programs.index')
+            ->with('success', "{$count} programs deleted successfully.");
+    }
+
     /**
      * Import programs from an uploaded Excel file.
      */
