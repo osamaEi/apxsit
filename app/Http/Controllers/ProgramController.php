@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\University;
 use Illuminate\Http\Request;
 use App\Exports\ProgramsExport;
+use App\Imports\ProgramsImport;
 use Barryvdh\DomPDF\Facade\PDF; 
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -421,6 +422,71 @@ public function exportPdf(Request $request)
 
         return redirect()->route('admin.programs.index')
             ->with('success', 'Program deleted successfully.');
+    }
+
+    /**
+     * Import programs from an uploaded Excel file.
+     */
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        $import = new ProgramsImport();
+        Excel::import($import, $request->file('file'));
+
+        $failures = $import->failures();
+        $errors   = $import->errors();
+
+        $problemMessages = [];
+
+        foreach ($failures as $failure) {
+            $problemMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+        }
+        foreach ($errors as $error) {
+            $problemMessages[] = $error->getMessage();
+        }
+
+        $count = $import->importedCount;
+
+        if (!empty($problemMessages)) {
+            $preview = implode(' | ', array_slice($problemMessages, 0, 5));
+            $more = count($problemMessages) > 5 ? ' ... and ' . (count($problemMessages) - 5) . ' more.' : '';
+            return redirect()->route('admin.programs.index')
+                ->with('warning', "Imported {$count} program(s) with issues — {$preview}{$more}");
+        }
+
+        return redirect()->route('admin.programs.index')
+            ->with('success', "Successfully imported {$count} program(s).");
+    }
+
+    /**
+     * Download a blank Excel template for importing programs.
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'University', 'Department', 'Degree', 'Language',
+            'Price Before Discount', 'Price After Discount',
+            'Cash Discount', 'Deposit Payment', 'Siblings Discount',
+            'Shift Type', 'Status',
+        ];
+
+        $example = [
+            'Example University', 'Computer Science', 'Bachelor', 'English',
+            '10000', '8000', '500', '2000', '5', 'Day', 'Active',
+        ];
+
+        $export = new class($headers, $example) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithStyles {
+            public function __construct(private array $headers, private array $example) {}
+            public function array(): array { return [$this->headers, $this->example]; }
+            public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array {
+                return [1 => ['font' => ['bold' => true]]];
+            }
+        };
+
+        return Excel::download($export, 'programs_import_template.xlsx');
     }
 
     /**

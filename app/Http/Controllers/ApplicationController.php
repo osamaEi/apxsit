@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\University;
 use App\Models\Application;
 use App\Models\Notification;
+use App\Models\NotificationSetting;
 use Illuminate\Http\Request;
 use App\Models\ApplicationFile;
 use App\Models\ApplicationFiles;
@@ -442,21 +443,21 @@ class ApplicationController extends Controller
                 }
             }
             
-            $registers =User::where('role','Register')->get();
-
-            foreach ($registers as $register) {
-                Notification::create([
-                    'type' => 'New Application',
-                    'notifiable_type' => 'App\Models\User',
-                    'notifiable_id' => $register->id,
-                    'data' => [
-                        'message' => "Payment Confirmation has been uploaded for application #{$application->id}",
-                        'application_id' => $application->id,
-                        'created_by' => $register->name,
-                    ]
-                ]);
-                
-                Log::info("New App laction (User ID: {$register->id}) for payment upload");
+            if (NotificationSetting::isEnabled('new_application')) {
+                $notifyRoles = NotificationSetting::rolesFor('new_application');
+                $registers = User::whereIn('role', $notifyRoles)->get();
+                foreach ($registers as $register) {
+                    Notification::create([
+                        'type' => 'New Application',
+                        'notifiable_type' => 'App\Models\User',
+                        'notifiable_id' => $register->id,
+                        'data' => [
+                            'message' => "New application #{$application->id} has been submitted",
+                            'application_id' => $application->id,
+                            'created_by' => $register->name,
+                        ]
+                    ]);
+                }
             }
             
        
@@ -749,21 +750,23 @@ public function updateStatus(Request $request, Application $application)
     // Get the student information from the application
     $student = $application->student;
     
-    // Get all users
-    $users = \App\Models\User::all();
-    
-    // Create notification for all users
-    foreach ($users as $user) {
-        $user->notifications()->whereIn('role',['admin','register'])->create([
-            'type' => 'application_status_changed',
-            'data' => [
-                'message' => "Application status updated to {$newStatusName}: {$student->first_name} {$student->last_name}",
-                'student_id' => $student->id,
-                'student_name' => $student->first_name . ' ' . $student->last_name,
-                'application_id' => $application->id,
-                'time' => now()->diffForHumans()
-            ],
-        ]);
+    if (NotificationSetting::isEnabled('application_status_changed')) {
+        $notifyRoles = NotificationSetting::rolesFor('application_status_changed');
+        $users = \App\Models\User::whereIn('role', $notifyRoles)->get();
+        foreach ($users as $user) {
+            Notification::create([
+                'type' => 'application_status_changed',
+                'notifiable_type' => 'App\Models\User',
+                'notifiable_id' => $user->id,
+                'data' => [
+                    'message' => "Application status updated to {$newStatusName}: {$student->first_name} {$student->last_name}",
+                    'student_id' => $student->id,
+                    'student_name' => $student->first_name . ' ' . $student->last_name,
+                    'application_id' => $application->id,
+                    'time' => now()->diffForHumans()
+                ],
+            ]);
+        }
     }
     
     // Log the status change
@@ -1084,14 +1087,16 @@ public function uploadFile(Request $request, Application $application)
         // Send notifications based on file type
         $currentUserId = auth()->id();
         
-        // For first acceptance or final acceptance, notify the application creator
-        if (($fileType === 'first_acceptance' || $fileType === 'final_acceptance') && $application->created_by) {
-            $creatorUser = User::find($application->created_by);
-            if ($creatorUser) {
+        // For first acceptance or final acceptance, notify users of configured roles
+        if (($fileType === 'first_acceptance' || $fileType === 'final_acceptance')
+            && NotificationSetting::isEnabled('file_uploaded')) {
+            $notifyRoles = NotificationSetting::rolesFor('file_uploaded');
+            $recipients = User::whereIn('role', $notifyRoles)->get();
+            foreach ($recipients as $recipient) {
                 Notification::create([
                     'type' => 'file_uploaded',
                     'notifiable_type' => 'App\Models\User',
-                    'notifiable_id' => $creatorUser->id,
+                    'notifiable_id' => $recipient->id,
                     'data' => [
                         'message' => "{$fileDescription} has been uploaded for application #{$application->id}",
                         'application_id' => $application->id,
@@ -1099,34 +1104,27 @@ public function uploadFile(Request $request, Application $application)
                         'file_type' => $fileType
                     ]
                 ]);
-                
-                Log::info("Notification sent to application creator (User ID: {$creatorUser->id}) for {$fileType} upload");
             }
         }
-        
-        // For payment file, notify the uploader of the application files
-        if ($fileType === 'payment_file') {
-            // Get the users who have uploaded files for this application (except current user)
-            $uploaderIds = $application->files()
-                ->where('uploaded_by', '!=', $currentUserId)
-                ->pluck('uploaded_by')
-                ->unique()
-                ->toArray();
-                
-            foreach ($uploaderIds as $uploaderId) {
-                Notification::create([
-                    'type' => 'payment_uploaded',
-                    'notifiable_type' => 'App\Models\User',
-                    'notifiable_id' => $uploaderId,
-                    'data' => [
-                        'message' => "Payment Confirmation has been uploaded for application #{$application->id}",
-                        'application_id' => $application->id,
-                        'uploaded_by' => $currentUserId,
-                        'file_type' => $fileType
-                    ]
-                ]);
-                
-                Log::info("Notification sent to file uploader (User ID: {$uploaderId}) for payment upload");
+
+        // For payment file, notify users of configured roles
+        if ($fileType === 'payment_file' && NotificationSetting::isEnabled('payment_uploaded')) {
+            $notifyRoles = NotificationSetting::rolesFor('payment_uploaded');
+            $recipients = User::whereIn('role', $notifyRoles)->get();
+            foreach ($recipients as $recipient) {
+                if ($recipient->id !== $currentUserId) {
+                    Notification::create([
+                        'type' => 'payment_uploaded',
+                        'notifiable_type' => 'App\Models\User',
+                        'notifiable_id' => $recipient->id,
+                        'data' => [
+                            'message' => "Payment Confirmation has been uploaded for application #{$application->id}",
+                            'application_id' => $application->id,
+                            'uploaded_by' => $currentUserId,
+                            'file_type' => $fileType
+                        ]
+                    ]);
+                }
             }
         }
        

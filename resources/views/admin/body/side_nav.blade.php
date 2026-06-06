@@ -405,6 +405,17 @@
             </li>
 
             @endif
+
+            @if(auth()->user()->role === 'Admin')
+            <li class="nav-item">
+                <a href="{{ route('admin.notification-settings.index') }}"
+                   class="nav-link {{ request()->routeIs('admin.notification-settings.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-bell"></i>
+                    <p>Notification Settings</p>
+                </a>
+            </li>
+            @endif
+
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

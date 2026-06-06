@@ -35,21 +35,28 @@
                                     @enderror
                                 </div>
                                 
+                                <!-- Language -->
+                                <div class="form-group">
+                                    <label for="language">Language <span class="text-danger">*</span></label>
+                                    <select class="form-control @error('language') is-invalid @enderror" id="language" name="language" required disabled>
+                                        <option value="">Select University first</option>
+                                    </select>
+                                    @error('language')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
                             <!-- Department -->
                             <div class="form-group">
                                 <label for="department">Department <span class="text-danger">*</span></label>
-                                <select class="form-control @error('department') is-invalid @enderror" id="department" name="department" required>
-                                    <option value="">Select Department</option>
-                            
-                                    @foreach($departments as $department)
-                                    <option value="{{$department->name}}" >{{$department->name}}</option>
-                                   @endforeach
+                                <select class="form-control @error('department') is-invalid @enderror" id="department" name="department" required disabled>
+                                    <option value="">Select Language first</option>
                                 @error('department')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
                                 </select>
                             </div>
-                                                         
+
                                 <!-- Degree -->
                                 <div class="form-group">
                                     <label for="degree">Degree <span class="text-danger">*</span></label>
@@ -62,26 +69,9 @@
                                             </option>
                                         @endforeach
 
-
                                     </select>
 
                                     @error('degree')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                
-                                <!-- Language -->
-                                <div class="form-group">
-                                    <label for="language">Language <span class="text-danger">*</span></label>
-                                    <select class="form-control @error('language') is-invalid @enderror" id="language" name="language" required>
-                                        <option value="">Select Language</option>
-                                        @foreach($languages as $key => $value)
-                                            <option value="{{ $key }}" {{ old('language', 'English') == $key ? 'selected' : '' }}>
-                                                {{ $value }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('language')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
@@ -224,28 +214,77 @@ $(function() {
     $('.select2bs4').select2({
         theme: 'bootstrap4'
     });
+
+    // University → load languages (Select2 fires 'select2:select' not 'change')
+    $('#university_id').on('select2:select select2:unselect change', function() {
+        var universityId = $(this).val();
+        var $language = $('#language');
+        var $department = $('#department');
+
+        $language.empty().append('<option value="">Select Language</option>').prop('disabled', true);
+        $department.empty().append('<option value="">Select Language first</option>').prop('disabled', true);
+
+        if (!universityId) return;
+
+        $.get('{{ url("admin/programs/by-university") }}/' + universityId)
+            .done(function(data) {
+                if (data.languages && data.languages.length) {
+                    $.each(data.languages, function(i, lang) {
+                        $language.append('<option value="' + lang + '">' + lang + '</option>');
+                    });
+                    $language.prop('disabled', false);
+                } else {
+                    $language.append('<option value="" disabled>No languages found for this university</option>');
+                }
+            });
+    });
+
+    // Language → load departments
+    $('#language').on('change', function() {
+        var universityId = $('#university_id').val();
+        var language = $(this).val();
+        var $department = $('#department');
+
+        $department.empty().append('<option value="">Select Department</option>').prop('disabled', true);
+
+        if (!universityId || !language) return;
+
+        $.get('{{ url("admin/programs/departments-by-language") }}/' + universityId + '/' + encodeURIComponent(language))
+            .done(function(data) {
+                if (data.departments && data.departments.length) {
+                    $.each(data.departments, function(i, dept) {
+                        $department.append('<option value="' + dept + '">' + dept + '</option>');
+                    });
+                }
+                $department.prop('disabled', false);
+            });
+    });
+
+    // Re-enable disabled selects before submit so their values are posted
+    $('form').on('submit', function() {
+        $('#language, #department').prop('disabled', false);
+    });
+
     // Form validation and calculations
     $('#before_discount, #after_discount').on('input', function() {
         validateDiscounts();
     });
-    
+
     function validateDiscounts() {
         var beforeDiscount = parseFloat($('#before_discount').val()) || 0;
         var afterDiscount = parseFloat($('#after_discount').val()) || 0;
-        
+
         if (afterDiscount > beforeDiscount) {
             $('#after_discount').addClass('is-invalid');
             $('#after_discount').after('<div class="invalid-feedback">After discount amount cannot be greater than before discount.</div>');
         } else {
             $('#after_discount').removeClass('is-invalid');
             $('.invalid-feedback').remove();
-            
-            // Calculate discount percentage
+
             var discount = beforeDiscount - afterDiscount;
             var percentage = (discount / beforeDiscount) * 100;
             percentage = percentage.toFixed(2);
-            
-            // Display calculated percentage
+
             if (beforeDiscount > 0) {
                 $('#after_discount').parent().siblings('small').html('Discount: ' + percentage + '%');
             }

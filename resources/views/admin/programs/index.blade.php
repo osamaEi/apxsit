@@ -44,12 +44,64 @@
             <i class="fas fa-file-pdf mr-1"></i> Export PDF
         </a>
         @if(auth()->user()->role == 'Admin' || auth()->user()->role == 'Register' )
+        <button type="button" class="btn btn-warning btn-sm mr-1" data-toggle="modal" data-target="#importModal">
+            <i class="fas fa-file-import mr-1"></i> Import Excel
+        </button>
         <a href="{{ route('admin.programs.create') }}" class="btn btn-primary btn-sm">
             <i class="fas fa-plus mr-1"></i> Add Program
         </a>
         @endif
     </div>
 </div>
+
+<!-- Import Modal -->
+@if(auth()->user()->role == 'Admin' || auth()->user()->role == 'Register' )
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">
+                    <i class="fas fa-file-import mr-1"></i> Import Programs from Excel
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('admin.programs.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Required columns (first row = headers):</strong><br>
+                        University, Department, Degree, Language, Price Before Discount, Price After Discount,
+                        Cash Discount, Deposit Payment, Siblings Discount, Shift Type, Status
+                        <br><br>
+                        <strong>⚠️ University name must match exactly:</strong><br>
+                        <small>{{ $universities->pluck('name')->implode(', ') }}</small>
+                        <br><br>
+                        <a href="{{ route('admin.programs.import-template') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-download mr-1"></i> Download Template
+                        </a>
+                    </div>
+                    <div class="form-group">
+                        <label for="importFile">Excel File <span class="text-danger">*</span></label>
+                        <input type="file" name="file" id="importFile" class="form-control-file @error('file') is-invalid @enderror" accept=".xlsx,.xls,.csv" required>
+                        @error('file')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Accepted formats: .xlsx, .xls, .csv — max 10 MB</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-upload mr-1"></i> Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
                 </div>
                 <div class="card-body">
                     <!-- Statistics Cards -->
@@ -389,6 +441,14 @@
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="fas fa-check-circle mr-1"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+                    @if(session('warning'))
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> {{ session('warning') }}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>

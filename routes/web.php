@@ -13,6 +13,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\StudentLoginController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\WorldDataController;
+use App\Http\Controllers\Admin\NotificationSettingsController;
 use App\Http\Controllers\Auth\StudentAuthController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -94,9 +95,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('universities/toggle-status/{university}', [UniversityController::class, 'toggleStatus'])->name('universities.toggle-status');
     Route::resource('universities', UniversityController::class);
 
-    // Program export routes
+    // Program export/import routes
     Route::get('programs/export-excel', [ProgramController::class, 'exportExcel'])->name('programs.export-excel');
     Route::get('programs/export-pdf', [ProgramController::class, 'exportPdf'])->name('programs.export-pdf');
+    Route::post('programs/import', [ProgramController::class, 'importExcel'])->name('programs.import');
+    Route::get('programs/import-template', [ProgramController::class, 'downloadTemplate'])->name('programs.import-template');
 
     // Announcement export routes
     Route::get('announcements/export-excel', [AnnouncementController::class, 'exportExcel'])->name('announcements.export-excel');
@@ -119,10 +122,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 }); 
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    // Program Routes
+    // Program AJAX routes — must be before resource() to avoid {program} wildcard swallowing them
     Route::get('programs/toggle-status/{program}', [ProgramController::class, 'toggleStatus'])->name('programs.toggle-status');
-    Route::resource('programs', ProgramController::class);
-    // AJAX: get departments/languages/degrees for a university from programs
     Route::get('programs/by-university/{universityId}', function ($universityId) {
         $programs = \App\Models\Program::where('university_id', $universityId);
         return response()->json([
@@ -131,6 +132,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             'degrees'     => $programs->clone()->distinct()->orderBy('degree')->pluck('degree'),
         ]);
     })->name('programs.by-university');
+    Route::get('programs/departments-by-language/{universityId}/{language}', function ($universityId, $language) {
+        $departments = \App\Models\Program::where('university_id', $universityId)
+            ->where('language', $language)
+            ->distinct()->orderBy('department')->pluck('department');
+        return response()->json(['departments' => $departments]);
+    })->name('programs.departments-by-language');
+
+    Route::resource('programs', ProgramController::class);
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -260,6 +269,10 @@ Route::prefix('chat')->middleware(['auth:web,student'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::resource('subagents', SubAgentController::class);
 // Add these routes to your routes/web.php file inside the admin middleware group
+
+// Notification Settings (Admin only)
+Route::get('notification-settings', [NotificationSettingsController::class, 'index'])->name('admin.notification-settings.index');
+Route::put('notification-settings', [NotificationSettingsController::class, 'update'])->name('admin.notification-settings.update');
 
 // Profile Settings
 Route::prefix('profile')->name('admin.profile.')->group(function () {
