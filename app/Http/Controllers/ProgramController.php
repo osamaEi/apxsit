@@ -427,7 +427,7 @@ public function exportPdf(Request $request)
     public function destroyAll()
     {
         $count = Program::count();
-        Program::truncate();
+        Program::query()->delete();
 
         return redirect()->route('admin.programs.index')
             ->with('success', "{$count} programs deleted successfully.");
