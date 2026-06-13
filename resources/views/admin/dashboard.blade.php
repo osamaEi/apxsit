@@ -2,26 +2,58 @@
 
 @section('content')
 <style>
-.dash-header { background:linear-gradient(135deg,#7a0066cb 0%,#8e2989 100%); color:#fff; padding:1.25rem 1.5rem; border-radius:8px; margin-bottom:1.5rem; }
-.dash-header h4 { margin:0; font-weight:600; font-size:1.2rem; }
-.dash-header p  { margin:0; opacity:.85; font-size:.875rem; }
+/* ── Dashboard header ── */
+.dash-header {
+    background: linear-gradient(135deg, #0a1628 0%, #0d2550 60%, #1a6bff 100%);
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(26,107,255,0.25);
+}
+.dash-header h4 { margin:0; font-weight:700; font-size:1.2rem; }
+.dash-header p  { margin:0; opacity:.8; font-size:.875rem; }
 
-.stat-card { border:none; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.07); transition:transform .2s,box-shadow .2s; }
-.stat-card:hover { transform:translateY(-3px); box-shadow:0 6px 16px rgba(0,0,0,.12); }
-.stat-card .card-body { padding:1.25rem; }
+/* ── Stat cards ── */
+.stat-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    transition: transform .2s, box-shadow .2s;
+    background: #fff;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(26,107,255,0.15); }
+.stat-card .card-body { padding: 1.25rem; }
 .stat-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
-.stat-value { font-size:1.75rem; font-weight:700; line-height:1; margin-bottom:2px; }
+.stat-value { font-size:1.75rem; font-weight:700; line-height:1; margin-bottom:2px; color:#0a1628; }
 .stat-label { font-size:.8rem; color:#6c757d; margin:0; }
 
-.section-card { border:none; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.07); }
-.section-card .card-header { background:#fff; border-bottom:1px solid #f0f0f0; padding:.875rem 1.25rem; border-radius:10px 10px 0 0; }
-.section-card .card-title { font-size:1rem; font-weight:600; margin:0; }
+/* ── Section cards ── */
+.section-card { border:none; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.07); background:#fff; }
+.section-card .card-header { background:#fff; border-bottom:1px solid #eef2ff; padding:.875rem 1.25rem; border-radius:12px 12px 0 0; }
+.section-card .card-title { font-size:1rem; font-weight:600; margin:0; color:#0a1628; }
 
 .legend-dot { width:10px; height:10px; border-radius:50%; display:inline-block; flex-shrink:0; }
 .legend-row { display:flex; align-items:center; gap:.5rem; padding:.35rem 0; font-size:.875rem; }
 .legend-row .val { margin-left:auto; font-weight:600; }
 
-.student-avatar { width:34px; height:34px; border-radius:50%; background:#e9ecef; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:.75rem; color:#495057; flex-shrink:0; }
+.student-avatar { width:34px; height:34px; border-radius:50%; background:#eef2ff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:.75rem; color:#1a6bff; flex-shrink:0; }
+
+/* ── Dark mode ── */
+body.dark-mode .stat-card,
+body.dark-mode .section-card { background: #1a2035 !important; box-shadow: 0 2px 10px rgba(0,0,0,.3); }
+body.dark-mode .stat-value { color: #e8efff !important; }
+body.dark-mode .stat-label { color: #8899bb !important; }
+body.dark-mode .section-card .card-header { background: #1a2035 !important; border-bottom-color: #243050 !important; }
+body.dark-mode .section-card .card-title { color: #e8efff !important; }
+body.dark-mode .stat-icon[style*="#eef2ff"] { background: #0d2550 !important; }
+body.dark-mode .stat-icon[style*="#eef2ff"] { background: #0d2550 !important; }
+body.dark-mode .stat-icon[style*="#e7f9f0"] { background: #0d2b1e !important; }
+body.dark-mode .stat-icon[style*="#fff4e5"] { background: #2b1d00 !important; }
+body.dark-mode .stat-icon[style*="#ffeef0"] { background: #2b0a0a !important; }
+body.dark-mode .dash-header { box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+body.dark-mode .student-avatar { background: #0d2550 !important; }
+body.dark-mode .legend-row { color: #c0cfee; }
 </style>
 
 {{-- Header --}}
@@ -47,7 +79,7 @@
     <div class="col-lg-3 col-sm-6 mb-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center" style="gap:1rem;">
-                <div class="stat-icon" style="background:#ebf3ff; color:#3a6eff;">
+                <div class="stat-icon" style="background:#eef2ff; color:#1a6bff;">
                     <i class="fas fa-user-graduate"></i>
                 </div>
                 <div>
@@ -55,13 +87,13 @@
                     <p class="stat-label">Total Students</p>
                 </div>
             </div>
-            <div style="height:3px; background:linear-gradient(90deg,#3a6eff,#7b9fff); border-radius:0 0 10px 10px;"></div>
+            <div style="height:3px; background:linear-gradient(90deg,#1a6bff,#4d8eff); border-radius:0 0 10px 10px;"></div>
         </div>
     </div>
     <div class="col-lg-3 col-sm-6 mb-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center" style="gap:1rem;">
-                <div class="stat-icon" style="background:#f6ecff; color:#8e2989;">
+                <div class="stat-icon" style="background:#eef2ff; color:#1a6bff;">
                     <i class="fas fa-university"></i>
                 </div>
                 <div>
@@ -69,7 +101,7 @@
                     <p class="stat-label">Universities</p>
                 </div>
             </div>
-            <div style="height:3px; background:linear-gradient(90deg,#8e2989,#c46fbd); border-radius:0 0 10px 10px;"></div>
+            <div style="height:3px; background:linear-gradient(90deg,#1a6bff,#4d8eff); border-radius:0 0 10px 10px;"></div>
         </div>
     </div>
     <div class="col-lg-3 col-sm-6 mb-3">
@@ -121,7 +153,7 @@
     <div class="col-lg-3 col-sm-6 mb-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center" style="gap:1rem;">
-                <div class="stat-icon" style="background:#ebf3ff; color:#3a6eff;">
+                <div class="stat-icon" style="background:#eef2ff; color:#1a6bff;">
                     <i class="fas fa-user-tie"></i>
                 </div>
                 <div>
@@ -129,7 +161,7 @@
                     <p class="stat-label">Employees</p>
                 </div>
             </div>
-            <div style="height:3px; background:linear-gradient(90deg,#3a6eff,#7b9fff); border-radius:0 0 10px 10px;"></div>
+            <div style="height:3px; background:linear-gradient(90deg,#1a6bff,#4d8eff); border-radius:0 0 10px 10px;"></div>
         </div>
     </div>
     <div class="col-lg-3 col-sm-6 mb-3">
@@ -201,7 +233,7 @@
                                 <td class="text-muted" style="font-size:.85rem;">{{ $i + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center" style="gap:.6rem;">
-                                        <div class="student-avatar" style="background:#f0e6f0; color:#8e2989;">
+                                        <div class="student-avatar" style="background:#f0e6f0; color:#1a6bff;">
                                             {{ strtoupper(substr($uni->name, 0, 2)) }}
                                         </div>
                                         <span style="font-weight:500;">{{ Str::limit($uni->name, 30) }}</span>
@@ -240,8 +272,8 @@
                         ['label'=>'Total Programs',    'val'=>$programStats['totalPrograms'],    'icon'=>'fa-list',           'color'=>'#6c757d'],
                         ['label'=>'Active',            'val'=>$programStats['activePrograms'],   'icon'=>'fa-check-circle',   'color'=>'#28c76f'],
                         ['label'=>'Inactive',          'val'=>$programStats['inactivePrograms'], 'icon'=>'fa-times-circle',   'color'=>'#ea5455'],
-                        ['label'=>'Bachelor Programs', 'val'=>$programStats['bachelorPrograms'], 'icon'=>'fa-graduation-cap', 'color'=>'#3a6eff'],
-                        ['label'=>'Master Programs',   'val'=>$programStats['masterPrograms'],   'icon'=>'fa-graduation-cap', 'color'=>'#8e2989'],
+                        ['label'=>'Bachelor Programs', 'val'=>$programStats['bachelorPrograms'], 'icon'=>'fa-graduation-cap', 'color'=>'#1a6bff'],
+                        ['label'=>'Master Programs',   'val'=>$programStats['masterPrograms'],   'icon'=>'fa-graduation-cap', 'color'=>'#1a6bff'],
                         ['label'=>'PhD Programs',      'val'=>$programStats['phdPrograms'],      'icon'=>'fa-graduation-cap', 'color'=>'#ff9500'],
                         ['label'=>'Announcements',     'val'=>$announcementStats['publishedAnnouncements'], 'icon'=>'fa-bullhorn', 'color'=>'#00cfe8'],
                         ['label'=>'Applications',      'val'=>$applicationCount,                'icon'=>'fa-clipboard-list', 'color'=>'#7367f0'],
@@ -276,7 +308,7 @@ $(function() {
                     {{ $programStats['activePrograms'] }},
                     {{ $programStats['inactivePrograms'] }}
                 ],
-                backgroundColor: ['#3a6eff','#8e2989','#ff9500','#28c76f','#ea5455'],
+                backgroundColor: ['#1a6bff','#1a6bff','#ff9500','#28c76f','#ea5455'],
                 borderRadius: 6,
                 barPercentage: 0.6
             }]

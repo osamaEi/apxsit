@@ -424,6 +424,27 @@ public function exportPdf(Request $request)
             ->with('success', 'Program deleted successfully.');
     }
 
+    public function allFilteredIds(Request $request)
+    {
+        $query = Program::query();
+        if ($request->filled('search')) {
+            $s = $request->input('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('department', 'like', "%{$s}%")
+                  ->orWhereHas('university', fn($u) => $u->where('name', 'like', "%{$s}%"));
+            });
+        }
+        if ($request->filled('university_id')) $query->whereIn('university_id', $request->input('university_id'));
+        if ($request->filled('department'))    $query->whereIn('department',    $request->input('department'));
+        if ($request->filled('degree'))        $query->whereIn('degree',        $request->input('degree'));
+        if ($request->filled('status'))        $query->where('status',          $request->input('status'));
+        if ($request->filled('language'))      $query->where('language',        $request->input('language'));
+        if ($request->filled('shift_type'))    $query->where('shift_type',      $request->input('shift_type'));
+        if ($request->filled('min_price'))     $query->where('after_discount',  '>=', $request->input('min_price'));
+        if ($request->filled('max_price'))     $query->where('after_discount',  '<=', $request->input('max_price'));
+        return response()->json(['count' => $query->count()]);
+    }
+
     public function destroyAll()
     {
         $count = Program::count();
@@ -431,6 +452,40 @@ public function exportPdf(Request $request)
 
         return redirect()->route('admin.programs.index')
             ->with('success', "{$count} programs deleted successfully.");
+    }
+
+    public function destroySelected(Request $request)
+    {
+        // Select-all mode: delete everything matching current filters
+        if ($request->boolean('select_all')) {
+            $query = Program::query();
+            if ($request->filled('search')) {
+                $s = $request->input('search');
+                $query->where(function ($q) use ($s) {
+                    $q->where('department', 'like', "%{$s}%")
+                      ->orWhereHas('university', fn($u) => $u->where('name', 'like', "%{$s}%"));
+                });
+            }
+            if ($request->filled('university_id')) $query->whereIn('university_id', $request->input('university_id'));
+            if ($request->filled('department'))    $query->whereIn('department',    $request->input('department'));
+            if ($request->filled('degree'))        $query->whereIn('degree',        $request->input('degree'));
+            if ($request->filled('status'))        $query->where('status',          $request->input('status'));
+            if ($request->filled('language'))      $query->where('language',        $request->input('language'));
+            if ($request->filled('shift_type'))    $query->where('shift_type',      $request->input('shift_type'));
+            if ($request->filled('min_price'))     $query->where('after_discount',  '>=', $request->input('min_price'));
+            if ($request->filled('max_price'))     $query->where('after_discount',  '<=', $request->input('max_price'));
+            $count = $query->delete();
+        } else {
+            $ids = $request->input('ids', []);
+            if (empty($ids)) {
+                return redirect()->route('admin.programs.index')
+                    ->with('warning', 'No programs selected.');
+            }
+            $count = Program::whereIn('id', $ids)->delete();
+        }
+
+        return redirect()->route('admin.programs.index')
+            ->with('success', "{$count} program(s) deleted successfully.");
     }
 
     /**

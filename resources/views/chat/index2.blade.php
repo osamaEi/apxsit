@@ -24,7 +24,7 @@
 }
 .sidebar-header {
     padding: 13px 16px;
-    background: #7a0066cb;
+    background: #1a6bff;
     color: #fff;
     display: flex;
     align-items: center;
@@ -66,7 +66,7 @@
     list-style:none;
 }
 .conv-item:hover { background:#f8f9fa; }
-.conv-item.active { background:#f0e6f0; border-left-color:#7a0066cb; }
+.conv-item.active { background:#f0e6f0; border-left-color:#1a6bff; }
 .conv-avatar {
     width:36px; height:36px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
@@ -85,12 +85,12 @@
 .contact-name { font-size:.82rem; font-weight:500; flex:1; }
 .btn-chat-start {
     width:26px; height:26px; border-radius:50%; border:none;
-    background:#f0e6f0; color:#7a0066cb;
+    background:#f0e6f0; color:#1a6bff;
     display:flex; align-items:center; justify-content:center;
     font-size:.72rem; flex-shrink:0; cursor:pointer;
     transition:background .15s;
 }
-.btn-chat-start:hover { background:#7a0066cb; color:#fff; }
+.btn-chat-start:hover { background:#1a6bff; color:#fff; }
 
 /* ── Chat Main ── */
 .chat-main { flex:1; display:flex; flex-direction:column; min-width:0; background:#f4f6f9; }
@@ -114,7 +114,7 @@
     max-width:68%; padding:8px 12px; border-radius:14px;
     font-size:.875rem; line-height:1.45;
 }
-.msg-row.me   .msg-bubble { background:#7a0066cb; color:#fff; border-bottom-right-radius:4px; }
+.msg-row.me   .msg-bubble { background:#1a6bff; color:#fff; border-bottom-right-radius:4px; }
 .msg-row.them .msg-bubble { background:#fff; color:#333; border-bottom-left-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
 .msg-time { font-size:.67rem; margin-top:3px; opacity:.7; text-align:right; }
 .msg-sender { font-size:.7rem; font-weight:600; margin-bottom:2px; opacity:.8; }
@@ -138,11 +138,11 @@
 .btn-icon:hover { background:#e9ecef; color:#555; }
 .btn-send {
     width:32px; height:32px; border-radius:50%; border:none;
-    background:#7a0066cb; color:#fff;
+    background:#1a6bff; color:#fff;
     display:flex; align-items:center; justify-content:center;
     font-size:.83rem; cursor:pointer; flex-shrink:0;
 }
-.btn-send:hover { background:#630053cb; }
+.btn-send:hover { background:#1558d6; }
 .attach-info { font-size:.78rem; color:#888; padding:4px 6px 0; }
 .recording-indicator { color:#ea5455; font-weight:500; }
 </style>
@@ -302,7 +302,7 @@ $(document).ready(function() {
                     name = c.name;
                     av = c.avatar
                         ? `<div class="conv-avatar"><img src="/storage/${c.avatar}"></div>`
-                        : `<div class="conv-avatar" style="background:#f0e6f0;color:#7a0066;"><i class="fas fa-users"></i></div>`;
+                        : `<div class="conv-avatar" style="background:#f0e6f0;color:#1a6bff;"><i class="fas fa-users"></i></div>`;
                 } else {
                     let other = c.users && c.users[0] ? c.users[0] : null;
                     if (other) {
@@ -361,7 +361,7 @@ $(document).ready(function() {
             status = `${total} members`;
             avHtml = c.avatar
                 ? `<img src="/storage/${c.avatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`
-                : `<div class="conv-avatar" style="background:#f0e6f0;color:#7a0066;"><i class="fas fa-users"></i></div>`;
+                : `<div class="conv-avatar" style="background:#f0e6f0;color:#1a6bff;"><i class="fas fa-users"></i></div>`;
             actions = `<button class="btn btn-sm btn-outline-secondary show-group-info" data-conversation-id="${c.id}"><i class="fas fa-info-circle mr-1"></i>Info</button>`;
         } else {
             const other = c.users && c.users[0] ? c.users[0] : null;

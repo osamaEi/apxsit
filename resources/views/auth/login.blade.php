@@ -5,568 +5,479 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>DEVA Education - Login</title>
-    
-    <!-- Fonts -->
+    <title>ABX SITE — Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+        /* Force light mode — never inherit OS dark scheme on this page */
+        html { color-scheme: light only; }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         :root {
-            --primary: #FF4A60;
-            --primary-hover: #E0394D;
-            --secondary: #7a0066cb;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --light-gray: #e2e8f0;
-            --danger: #ef4444;
-            --success: #10b981;
-            --deva-purple: #7a0066cb;
-            --deva-coral: #FF4A60;
-            --deva-gray: #f2f2f2;
+            --primary:      #1a6bff;
+            --primary-dark: #1558d6;
+            --navy:         #0a1628;
+            --navy-mid:     #0d2550;
+            --navy-accent:  #0a3d99;
+            --text:         #1e293b;
+            --muted:        #64748b;
+            --border:       #e2e8f0;
+            --bg:           #f8faff;
+            --white:        #ffffff;
+            --danger:       #ef4444;
+            --success:      #10b981;
         }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
-            height: 100vh;
-            display: flex;
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             overflow: hidden;
         }
-        
-        .login-container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .login-image {
-            width: 55%;
-            background-color: var(--deva-purple);
-            background-image: linear-gradient(135deg, var(--deva-purple) 0%, rgba(142, 41, 137, 0.8) 100%);
-            background-size: cover;
-            background-position: center;
+
+        /* ── Layout ── */
+        .page { display: flex; height: 100vh; }
+
+        /* ── Left panel ── */
+        .panel-left {
+            flex: 0 0 52%;
+            background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 55%, #0d3b8a 100%);
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
             padding: 3rem;
+            overflow: hidden;
         }
-        
-        .login-image::before {
+
+        /* decorative circles */
+        .panel-left::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+            border-radius: 50%;
+            width: 520px; height: 520px;
+            background: var(--primary);
+            bottom: -140px; right: -140px;
+            opacity: 0.07;
         }
-        
-        .image-content {
-            position: relative;
-            color: white;
-            max-width: 500px;
-        }
-        
-        .image-content h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
-        .image-content p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-        }
-        
-        .brand {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .brand-logo {
-            width: 180px;
-            height: auto;
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-form {
-            width: 45%;
-            padding: 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            background-color: var(--deva-gray);
-        }
-        
-        .form-container {
-            max-width: 420px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        
-        .form-header {
-            margin-bottom: 2.5rem;
-        }
-        
-        .form-header h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--dark);
-            background: linear-gradient(to right, var(--deva-coral), var(--deva-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-        }
-        
-        .form-header p {
-            color: var(--gray);
-        }
-        
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .input-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--light-gray);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: var(--deva-coral);
-            box-shadow: 0 0 0 3px rgba(255, 74, 96, 0.15), 0 0 0 1px rgba(142, 41, 137, 0.2);
-        }
-        
-        .input-error {
-            color: var(--danger);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-        
-        .remember-forgot {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-        
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .checkbox {
-            width: 1rem;
-            height: 1rem;
-            cursor: pointer;
-            border-radius: 0.25rem;
-            border: 1px solid var(--light-gray);
-            accent-color: var(--deva-coral);
-        }
-        
-        .remember-text {
-            font-size: 0.875rem;
-            color: var(--gray);
-        }
-        
-        .forgot-link {
-            font-size: 0.875rem;
-            color: var(--deva-coral);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        .forgot-link:hover {
-            color: var(--primary-hover);
-            text-decoration: underline;
-        }
-        
-        .login-button {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, var(--deva-coral) 0%, var(--deva-purple) 100%);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(142, 41, 137, 0.2);
-        }
-        
-        .login-button:hover {
-            background: linear-gradient(135deg, var(--deva-coral) 20%, var(--deva-purple) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(142, 41, 137, 0.3);
-        }
-        
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 1.5rem 0;
-            color: var(--gray);
-            font-size: 0.875rem;
-        }
-        
-        .divider::before, .divider::after {
+        .panel-left::after {
             content: '';
-            flex: 1;
-            height: 1px;
-            background-color: var(--light-gray);
-        }
-        
-        .divider::before {
-            margin-right: 1rem;
-        }
-        
-        .divider::after {
-            margin-left: 1rem;
-        }
-        
-        .social-login {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .social-button {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem;
-            border: 1px solid var(--light-gray);
-            border-radius: 0.5rem;
-            background-color: white;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .social-button:hover {
-            background-color: var(--light);
-        }
-        
-        .social-icon {
-            width: 1.25rem;
-            height: 1.25rem;
-        }
-        
-        .register-link-container {
-            text-align: center;
-            font-size: 0.875rem;
-            color: var(--gray);
+            position: absolute;
+            border-radius: 50%;
+            width: 280px; height: 280px;
+            background: #4d8eff;
+            top: -80px; left: -60px;
+            opacity: 0.07;
         }
 
-        .register-link {
-            color: var(--deva-coral);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
+        /* dot grid */
+        .dots {
+            position: absolute;
+            z-index: 0;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px; height: 320px;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px);
+            background-size: 22px 22px;
+            opacity: 0.45;
         }
 
-        .register-link:hover {
-            color: var(--primary-hover);
-            text-decoration: underline;
+        .panel-brand {
+            position: relative;
+            z-index: 1;
         }
 
-        /* Role switcher */
-        .role-switcher {
-            display: flex;
-            background: #e9ecef;
+        .panel-brand img {
+            height: 56px;
+            width: auto;
             border-radius: 10px;
-            padding: 4px;
-            margin-bottom: 2rem;
-            gap: 4px;
+            display: block;
         }
-        .role-btn {
-            flex: 1;
-            padding: 0.6rem 1rem;
-            border: none;
-            border-radius: 7px;
-            font-size: 0.875rem;
+
+        .panel-tagline {
+            position: relative;
+            z-index: 1;
+            margin-top: auto;
+            color: #fff;
+        }
+
+        .panel-tagline h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .panel-tagline p {
+            font-size: 0.975rem;
+            color: rgba(255,255,255,0.72);
+            max-width: 400px;
+            line-height: 1.7;
+        }
+
+        .features {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 2rem;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: rgba(255,255,255,0.88);
+            font-size: 0.78rem;
             font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: transparent;
-            color: var(--gray);
+            padding: 0.32rem 0.8rem;
+            border-radius: 100px;
+        }
+
+        /* ── Right panel ── */
+        .panel-right {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
+            padding: 2.5rem;
+            background: var(--white);
+            overflow-y: auto;
         }
-        .role-btn.active {
-            background: white;
-            color: var(--deva-purple);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-weight: 600;
+
+        .form-box {
+            width: 100%;
+            max-width: 400px;
         }
-        .role-btn:hover:not(.active) {
-            background: rgba(255,255,255,0.5);
-            color: var(--dark);
+
+        /* ── Role tabs ── */
+        .role-tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 2rem;
         }
-        
-        .session-status {
-            background-color: var(--success);
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
+
+        .role-tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0.55rem 1rem;
+            border: none;
+            border-radius: 9px;
+            font-family: inherit;
             font-size: 0.875rem;
             font-weight: 500;
+            color: var(--muted);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+
+        .role-tab.active {
+            background: var(--white);
+            color: var(--primary);
+            font-weight: 600;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.1), 0 0 0 1px rgba(26,107,255,0.12);
+        }
+
+        .role-tab:hover:not(.active) {
+            color: var(--text);
+            background: rgba(255,255,255,0.7);
+        }
+
+        /* ── Heading ── */
+        .form-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+            letter-spacing: -0.3px;
+        }
+
+        .form-subtitle {
+            font-size: 0.875rem;
+            color: var(--muted);
+            margin-bottom: 1.75rem;
+        }
+
+        /* ── Alert ── */
+        .alert-ok {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
         }
-        
-        .status-close {
+        .alert-close { cursor: pointer; opacity: 0.55; font-size: 1.1rem; }
+        .alert-close:hover { opacity: 1; }
+
+        /* ── Fields ── */
+        .field { margin-bottom: 1.2rem; }
+
+        .field label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+
+        /* Hard-override so OS dark mode never darkens these inputs */
+        .field input[type="email"],
+        .field input[type="password"] {
+            display: block;
+            width: 100%;
+            padding: 0.7rem 0.95rem;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            color: #1e293b !important;
+            background: #ffffff !important;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 9px;
+            outline: none;
+            -webkit-text-fill-color: #1e293b !important;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .field input[type="email"]:focus,
+        .field input[type="password"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,107,255,0.12);
+        }
+
+        .field input::placeholder { color: #a0aec0 !important; opacity: 1; }
+
+        .field .err {
+            font-size: 0.8rem;
+            color: var(--danger);
+            margin-top: 0.3rem;
+        }
+
+        .field input.has-error { border-color: var(--danger) !important; }
+
+        /* ── Remember ── */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .remember-row input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--primary);
             cursor: pointer;
-            font-size: 1.25rem;
-            font-weight: bold;
+            background: #fff !important;
         }
-        
-        .logo-container {
-            text-align: center;
-            margin-bottom: 2rem;
+
+        .remember-row label {
+            font-size: 0.8125rem;
+            color: var(--muted);
+            cursor: pointer;
         }
-        
-        .small-logo {
-            width: 120px;
-            height: auto;
-            margin: 0 auto;
+
+        /* ── Submit ── */
+        .btn-login {
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1rem;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--navy-accent) 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(26,107,255,0.32);
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-bottom: 1.5rem;
         }
-        
-        @media (max-width: 1024px) {
-            .login-image {
-                width: 45%;
-                padding: 2rem;
-            }
-            
-            .login-form {
-                width: 55%;
-                padding: 2rem;
-            }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #082e77 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(26,107,255,0.4);
         }
-        
-        @media (max-width: 768px) {
-            body {
-                overflow-y: auto;
-            }
-            
-            .login-container {
-                flex-direction: column;
-                height: auto;
-                min-height: 100vh;
-            }
-            
-            .login-image {
-                width: 100%;
-                height: 35vh;
-                min-height: 300px;
-                padding: 1.5rem;
-            }
-            
-            .login-form {
-                width: 100%;
-                padding: 2rem 1.5rem;
-            }
-            
-            .form-container {
-                max-width: 100%;
-            }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* ── Alt link ── */
+        .alt-wrap { text-align: center; }
+
+        .alt-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 0.45rem 1.1rem;
+            border: 1.5px solid var(--primary);
+            border-radius: 8px;
+            transition: background 0.15s, color 0.15s;
         }
-        
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            body:not(.light-mode) {
-                --light: #0f172a;
-                --dark: #f8fafc;
-                --light-gray: #334155;
-                background-color: var(--light);
-                color: var(--dark);
-            }
-            
-            body:not(.light-mode) .input-field {
-                background-color: #1e293b;
-                color: var(--dark);
-            }
-            
-            body:not(.light-mode) .social-button {
-                background-color: #1e293b;
-                color: var(--dark);
-            }
-            
-            body:not(.light-mode) .social-button:hover {
-                background-color: #334155;
-            }
+
+        .alt-link:hover { background: var(--primary); color: #fff; }
+
+        /* ── Responsive ── */
+        @media (max-width: 820px) {
+            html, body { overflow: auto; }
+            .page { flex-direction: column; height: auto; min-height: 100vh; }
+            .panel-left { flex: none; min-height: 260px; padding: 2rem; }
+            .panel-left::before { width: 300px; height: 300px; bottom: -80px; right: -80px; }
+            .panel-tagline h2 { font-size: 1.6rem; }
+            .dots { display: none; }
+            .panel-right { padding: 2rem 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-image">
-            <div class="brand">
-                <img src="{{ asset('logo2.jpg') }}" alt="DEVA Education" class="brand-logo">
-            </div>
-            <div class="image-content">
-                <h2>Welcome to DEVA Education</h2>
-                <p>Access your dashboard to manage courses, track student progress, monitor registrations, and accomplish your daily tasks with our streamlined platform.</p>
-            </div>
+<div class="page">
+
+    {{-- Left panel --}}
+    <div class="panel-left">
+        <div class="dots"></div>
+        <div class="panel-brand">
+            <img src="{{ asset('Apx.jpeg') }}" alt="ABX SITE">
         </div>
-        
-        <div class="login-form">
-            <div class="form-container">
-                <!-- Logo -->
-                <div style="text-align:center; margin-bottom:1.5rem;">
-                    <img src="{{ asset('logo2.jpg') }}" alt="DEVA Education" style="height:70px; width:auto; border-radius:8px;">
-                </div>
-
-                <!-- Role Switcher — shown first -->
-                <div class="role-switcher">
-                    <button type="button" class="role-btn active" id="btnAdmin" onclick="switchRole('admin')">
-                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm4 8c0 1-1 1-1 1H5s-1 0-1-1 1-4 4-4 4 3 4 4z"/><path fill-rule="evenodd" d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0z"/></svg>
-                        Admin
-                    </button>
-                    <button type="button" class="role-btn" id="btnStudent" onclick="switchRole('student')">
-                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5z"/></svg>
-                        Student
-                    </button>
-                </div>
-
-                <div class="form-header">
-                    <h1 id="formTitle">Sign in as Admin</h1>
-                    <p id="formSubtitle">Enter your admin credentials to access the dashboard</p>
-                </div>
-
-                @if (session('status'))
-                    <div class="session-status">
-                        {{ session('status') }}
-                        <span class="status-close">&times;</span>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('login') }}" id="loginForm">
-                    @csrf
-                    
-                    <div class="input-group">
-                        <label for="email" class="input-label">Email address</label>
-                        <input id="email" class="input-field" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" />
-                        @error('email')
-                            <div class="input-error">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="password" class="input-label">Password</label>
-                        <input id="password" class="input-field" type="password" name="password" required autocomplete="current-password" />
-                        @error('password')
-                            <div class="input-error">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="remember-forgot">
-                        <div class="remember-me">
-                            <input id="remember_me" type="checkbox" class="checkbox" name="remember">
-                            <label for="remember_me" class="remember-text">Remember me</label>
-                        </div>
-                        
-                        {{-- @if (Route::has('password.request'))
-                            <a class="forgot-link" href="{{ route('password.request') }}">
-                                Forgot password?
-                            </a>
-                        @endif --}}
-                    </div>
-                    
-                    <button type="submit" class="login-button" id="submitBtn">
-                        Sign in as Admin
-                    </button>
-                </form>
-
-                <div style="text-align:center; margin-top:1rem;">
-                    <a href="{{ route('student.login.view') }}" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.875rem; color:#7a0066; text-decoration:none; font-weight:500; padding:0.5rem 1.25rem; border:1.5px solid #7a0066; border-radius:8px; transition:all 0.2s;" id="studentLoginLink">
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5z"/></svg>
-                        Sign in as Student instead
-                    </a>
-                </div>
+        <div class="panel-tagline">
+            <h2>Welcome back to<br>ABX SITE</h2>
+            <p>Manage courses, track student progress, and handle registrations — all from one powerful dashboard.</p>
+            <div class="features">
+                <span class="pill">
+                    <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg>
+                    Student Management
+                </span>
+                <span class="pill">
+                    <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg>
+                    Program Tracking
+                </span>
+                <span class="pill">
+                    <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg>
+                    Secure &amp; Fast
+                </span>
             </div>
         </div>
     </div>
-    
-    <script>
-        const ROUTES = {
-            admin:   '{{ route('login') }}',
-            student: '{{ route('student.login') }}'
-        };
 
-        function switchRole(role) {
-            const form      = document.getElementById('loginForm');
-            const btnAdmin  = document.getElementById('btnAdmin');
-            const btnStudent= document.getElementById('btnStudent');
-            const title     = document.getElementById('formTitle');
-            const subtitle  = document.getElementById('formSubtitle');
-            const submitBtn = form.querySelector('.login-button');
+    {{-- Right form panel --}}
+    <div class="panel-right">
+        <div class="form-box">
 
-            form.action = ROUTES[role];
+            <div class="role-tabs">
+                <button type="button" class="role-tab active" id="btnAdmin" onclick="switchRole('admin')">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm4 8c0 1-1 1-1 1H5s-1 0-1-1 1-4 4-4 4 3 4 4z"/></svg>
+                    Admin
+                </button>
+                <button type="button" class="role-tab" id="btnStudent" onclick="switchRole('student')">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5z"/></svg>
+                    Student
+                </button>
+            </div>
 
-            if (role === 'admin') {
-                btnAdmin.classList.add('active');
-                btnStudent.classList.remove('active');
-                title.textContent    = 'Sign in as Admin';
-                subtitle.textContent = 'Enter your admin credentials to access the dashboard';
-                submitBtn.textContent = 'Sign in as Admin';
-            } else {
-                btnStudent.classList.add('active');
-                btnAdmin.classList.remove('active');
-                title.textContent    = 'Sign in as Student';
-                subtitle.textContent = 'Enter your student credentials to access your portal';
-                submitBtn.textContent = 'Sign in as Student';
-            }
+            <div class="form-title" id="formTitle">Sign in as Admin</div>
+            <div class="form-subtitle" id="formSubtitle">Enter your credentials to access the dashboard</div>
+
+            @if (session('status'))
+            <div class="alert-ok">
+                <span>{{ session('status') }}</span>
+                <span class="alert-close" onclick="this.parentElement.remove()">&times;</span>
+            </div>
+            @endif
+
+            <form method="POST" action="{{ route('login') }}" id="loginForm">
+                @csrf
+
+                <div class="field">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email"
+                           value="{{ old('email') }}"
+                           placeholder="you@example.com"
+                           autocomplete="username"
+                           class="{{ $errors->has('email') ? 'has-error' : '' }}"
+                           required autofocus>
+                    @error('email')<div class="err">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="••••••••"
+                           autocomplete="current-password"
+                           class="{{ $errors->has('password') ? 'has-error' : '' }}"
+                           required>
+                    @error('password')<div class="err">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="remember-row">
+                    <input type="checkbox" id="remember_me" name="remember">
+                    <label for="remember_me">Keep me signed in</label>
+                </div>
+
+                <button type="submit" class="btn-login" id="submitBtn">Sign in as Admin</button>
+            </form>
+
+            <div class="alt-wrap">
+                <a href="{{ route('student.login.view') }}" class="alt-link" id="altLink">
+                    <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5z"/></svg>
+                    Sign in as Student instead
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ROUTES = { admin: "{{ route('login') }}", student: "{{ route('student.login') }}" };
+
+    function switchRole(role) {
+        const form    = document.getElementById('loginForm');
+        const title   = document.getElementById('formTitle');
+        const sub     = document.getElementById('formSubtitle');
+        const btn     = document.getElementById('submitBtn');
+        const altLink = document.getElementById('altLink');
+        const tabA    = document.getElementById('btnAdmin');
+        const tabS    = document.getElementById('btnStudent');
+
+        form.action = ROUTES[role];
+
+        if (role === 'admin') {
+            tabA.classList.add('active');    tabS.classList.remove('active');
+            title.textContent = 'Sign in as Admin';
+            sub.textContent   = 'Enter your credentials to access the dashboard';
+            btn.textContent   = 'Sign in as Admin';
+            altLink.href      = ROUTES.student;
+            altLink.innerHTML = `<svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917l-7.5-3.5z"/></svg> Sign in as Student instead`;
+        } else {
+            tabS.classList.add('active');    tabA.classList.remove('active');
+            title.textContent = 'Sign in as Student';
+            sub.textContent   = 'Enter your student credentials to access your portal';
+            btn.textContent   = 'Sign in as Student';
+            altLink.href      = ROUTES.admin;
+            altLink.innerHTML = `<svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm4 8c0 1-1 1-1 1H5s-1 0-1-1 1-4 4-4 4 3 4 4z"/></svg> Sign in as Admin instead`;
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const statusClose = document.querySelector('.status-close');
-            if (statusClose) {
-                statusClose.addEventListener('click', function() {
-                    this.parentElement.style.display = 'none';
-                });
-            }
-        });
-    </script>
+    }
+</script>
 </body>
 </html>

@@ -5,10 +5,10 @@
 <title>Programs Report</title>
 <style>
 body { font-family: Arial, sans-serif; font-size: 10px; color: #222; margin: 0; padding: 15px; }
-h2 { font-size: 15px; color: #7a0066; margin: 0 0 4px; }
+h2 { font-size: 15px; color: #1a6bff; margin: 0 0 4px; }
 .meta { font-size: 9px; color: #666; margin-bottom: 10px; }
 table { width: 100%; border-collapse: collapse; }
-th { background: #7a0066; color: #fff; padding: 5px 4px; text-align: left; font-size: 9px; }
+th { background: #1a6bff; color: #fff; padding: 5px 4px; text-align: left; font-size: 9px; }
 td { padding: 4px; border-bottom: 1px solid #eee; font-size: 9px; vertical-align: top; }
 tr:nth-child(even) td { background: #fafafa; }
 .status-active { color: #198754; font-weight: bold; }
@@ -67,6 +67,6 @@ tr:nth-child(even) td { background: #fafafa; }
     </tbody>
 </table>
 
-<div class="footer">DEVA Education &copy; {{ date('Y') }}</div>
+<div class="footer">ABX SITE &copy; {{ date('Y') }}</div>
 </body>
 </html>

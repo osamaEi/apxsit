@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Deva System - Student Registration</title>
+    <title>ABX SITE - Student Registration</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -582,8 +582,8 @@
         <div class="info-sidebar">
             <div class="sidebar-content">
                 <div class="sidebar-header">
-                    <img src="{{asset('logo.jpg')}}" alt="Deva University Logo" class="img-fluid">
-                    <h1>Deva University</h1>
+                    <img src="{{asset('Apx.jpeg')}}" alt="ABX SITE" class="img-fluid">
+                    <h1>ABX SITE</h1>
                     <p>Student Registration Portal</p>
                 </div>
                 
@@ -635,8 +635,8 @@
                 </div>
                 
                 <div class="sidebar-footer">
-                    <p>© {{ date('Y') }} Deva University. All rights reserved.</p>
-                    <p>Need help? Contact us at <strong>admissions@deva.edu</strong></p>
+                    <p>© {{ date('Y') }} ABX SITE. All rights reserved.</p>
+                    <p>Need help? Contact us at <strong>info@abxsite.com</strong></p>
                 </div>
             </div>
         </div>
@@ -1679,7 +1679,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <h5>Deva University Student Registration Terms</h5>
+                    <h5>ABX SITE Student Registration Terms</h5>
                     <p>By submitting this application form, you agree to the following terms and conditions:</p>
                     
                     <h6>1. Accuracy of Information</h6>

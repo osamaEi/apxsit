@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>DEVA Education - Login</title>
+    <title>ABX SITE - Login</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,16 +23,16 @@
         :root {
             --primary: #FF4A60;
             --primary-hover: #E0394D;
-            --secondary: #7a0066cb;
+            --secondary: #1a6bff;
             --dark: #1e293b;
             --light: #f8fafc;
             --gray: #64748b;
             --light-gray: #e2e8f0;
             --danger: #ef4444;
             --success: #10b981;
-            --deva-purple: #7a0066cb;
-            --deva-coral: #FF4A60;
-            --deva-gray: #f2f2f2;
+            --primary: #1a6bff;
+            --primary-hover: #1558d6;
+            --light: #f4f7ff;
         }
         
         body {
@@ -52,8 +52,8 @@
         
         .login-image {
             width: 55%;
-            background-color: var(--deva-purple);
-            background-image: linear-gradient(135deg, var(--deva-purple) 0%, rgba(142, 41, 137, 0.8) 100%);
+            background: linear-gradient(145deg, #0a1628 0%, #0d2550 50%, #0a3d99 100%);
+            
             background-size: cover;
             background-position: center;
             position: relative;
@@ -113,7 +113,7 @@
             flex-direction: column;
             justify-content: center;
             position: relative;
-            background-color: var(--deva-gray);
+            background-color: #f4f7ff;
         }
         
         .form-container {
@@ -131,7 +131,7 @@
             font-weight: 600;
             margin-bottom: 0.75rem;
             color: var(--dark);
-            background: linear-gradient(to right, var(--deva-coral), var(--deva-purple));
+            background: linear-gradient(to right, #1a6bff, #1a6bff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -165,8 +165,8 @@
         
         .input-field:focus {
             outline: none;
-            border-color: var(--deva-coral);
-            box-shadow: 0 0 0 3px rgba(255, 74, 96, 0.15), 0 0 0 1px rgba(142, 41, 137, 0.2);
+            border-color: #1a6bff;
+            box-shadow: 0 0 0 3px rgba(255, 74, 96, 0.15), 0 0 0 1px rgba(26,107,255,0.2);
         }
         
         .input-error {
@@ -194,7 +194,7 @@
             cursor: pointer;
             border-radius: 0.25rem;
             border: 1px solid var(--light-gray);
-            accent-color: var(--deva-coral);
+            accent-color: #1a6bff;
         }
         
         .remember-text {
@@ -204,7 +204,7 @@
         
         .forgot-link {
             font-size: 0.875rem;
-            color: var(--deva-coral);
+            color: #1a6bff;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
@@ -218,7 +218,7 @@
         .login-button {
             width: 100%;
             padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, var(--deva-coral) 0%, var(--deva-purple) 100%);
+            background: linear-gradient(135deg, #1a6bff 0%, #1a6bff 100%);
             color: white;
             border: none;
             border-radius: 0.5rem;
@@ -227,13 +227,13 @@
             cursor: pointer;
             transition: all 0.3s;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(142, 41, 137, 0.2);
+            box-shadow: 0 4px 6px rgba(26,107,255,0.2);
         }
         
         .login-button:hover {
-            background: linear-gradient(135deg, var(--deva-coral) 20%, var(--deva-purple) 100%);
+            background: linear-gradient(135deg, #1a6bff 20%, #1a6bff 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(142, 41, 137, 0.3);
+            box-shadow: 0 6px 8px rgba(26,107,255,0.3);
         }
         
         .divider {
@@ -295,7 +295,7 @@
         }
         
         .register-link {
-            color: var(--deva-coral);
+            color: #1a6bff;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
@@ -406,10 +406,10 @@
     <div class="login-container">
         <div class="login-image">
             <div class="brand">
-                <img src="{{ asset('logo2.jpg') }}" alt="DEVA Education" class="brand-logo">
+                <img src="{{ asset('Apx.jpeg') }}" alt="ABX SITE" class="brand-logo">
             </div>
             <div class="image-content">
-                <h2>Welcome to DEVA Education</h2>
+                <h2>Welcome to ABX SITE</h2>
                 <p>Access your dashboard to manage courses, track student progress, monitor registrations, and accomplish your daily tasks with our streamlined platform.</p>
             </div>
         </div>
@@ -417,7 +417,7 @@
         <div class="login-form">
             <div class="form-container">
                 <div class="logo-container">
-                    <img src="{{ asset('logo2.jpg') }}" alt="DEVA Education" style="height:70px; width:auto; border-radius:8px;">
+                    <img src="{{ asset('Apx.jpeg') }}" alt="ABX SITE" style="height:70px; width:auto; border-radius:8px;">
                 </div>
                 
                 <div class="form-header">
@@ -470,7 +470,7 @@
                 </form>
 
                 <div style="text-align:center; margin-top:1.25rem;">
-                    <a href="{{ url('/') }}" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.875rem; color:#7a0066; text-decoration:none; font-weight:500; padding:0.5rem 1.25rem; border:1.5px solid #7a0066; border-radius:8px; transition:all 0.2s;">
+                    <a href="{{ url('/') }}" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.875rem; color:#1a6bff; text-decoration:none; font-weight:500; padding:0.5rem 1.25rem; border:1.5px solid #1a6bff; border-radius:8px; transition:all 0.2s;">
                         <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
                         Back to Main Login
                     </a>

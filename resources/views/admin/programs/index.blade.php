@@ -52,33 +52,44 @@
         </a>
         @endif
         @if(auth()->user()->role == 'Admin')
-        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteAllModal">
-            <i class="fas fa-trash mr-1"></i> Delete All
+        <button type="button" class="btn btn-danger btn-sm" id="deleteSelectedBtn" data-toggle="modal" data-target="#deleteSelectedModal" style="display:none;">
+            <i class="fas fa-check-square mr-1"></i> Delete Selected (<span id="selectedCount">0</span>)
         </button>
         @endif
     </div>
 </div>
 
-<!-- Import Modal -->
 @if(auth()->user()->role == 'Admin')
-<div class="modal fade" id="deleteAllModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="deleteSelectedModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="fas fa-exclamation-triangle mr-1"></i> Delete All Programs</h5>
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle mr-1"></i> Delete Programs</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to <strong>delete all {{ $totalPrograms }} programs</strong>?</p>
+                <p>Are you sure you want to delete <strong id="confirmCount">0</strong> program(s)?</p>
                 <p class="text-danger"><strong>This action cannot be undone.</strong></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <form action="{{ route('admin.programs.destroy-all') }}" method="POST" class="d-inline">
+                <form id="deleteSelectedForm" action="{{ route('admin.programs.destroy-selected') }}" method="POST" class="d-inline">
                     @csrf
                     @method('DELETE')
+                    {{-- filter params for select_all mode --}}
+                    @foreach(request()->except(['_token','page']) as $key => $val)
+                        @if(is_array($val))
+                            @foreach($val as $v)
+                                <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                            @endforeach
+                        @else
+                            <input type="hidden" name="{{ $key }}" value="{{ $val }}">
+                        @endif
+                    @endforeach
+                    <input type="hidden" name="select_all" id="formSelectAll" value="0">
+                    <div id="selectedIdsContainer"></div>
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash mr-1"></i> Yes, Delete All
+                        <i class="fas fa-trash mr-1"></i> Yes, Delete
                     </button>
                 </form>
             </div>
@@ -209,7 +220,7 @@
                     .fd-btn:hover { border-color:#adb5bd; background:#f8f9fa; }
                     .fd-btn .fd-label { overflow:hidden; text-overflow:ellipsis; flex:1; }
                     .fd-btn .fd-caret { font-size:10px; color:#888; flex-shrink:0; }
-                    .fd-btn.has-value { border-color:#7a0066cb; color:#7a0066cb; background:#fdf5fc; }
+                    .fd-btn.has-value { border-color:#1a6bff; color:#1a6bff; background:#fdf5fc; }
 
                     .fd-panel {
                         display:none; position:absolute; top:calc(100% + 4px); left:0;
@@ -225,7 +236,7 @@
                     .fd-list { max-height:200px; overflow-y:auto; }
                     .fd-item { display:flex; align-items:center; padding:5px 12px; cursor:pointer; font-size:13px; }
                     .fd-item:hover { background:#f8f9fa; }
-                    .fd-item input[type=checkbox] { margin-right:8px; flex-shrink:0; accent-color:#7a0066cb; }
+                    .fd-item input[type=checkbox] { margin-right:8px; flex-shrink:0; accent-color:#1a6bff; }
                     .fd-item.active-item { background:#fdf5fc; font-weight:500; }
                     .fd-none { padding:8px 12px; color:#aaa; font-size:12px; font-style:italic; }
 
@@ -233,7 +244,7 @@
                     .active-tags { display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin-top:8px; }
                     .active-tags .tag {
                         display:inline-flex; align-items:center; gap:4px;
-                        background:#f0e6f0; color:#7a0066cb; border-radius:20px;
+                        background:#f0e6f0; color:#1a6bff; border-radius:20px;
                         padding:2px 10px; font-size:11px; font-weight:500;
                     }
                     .active-tags .tag .tag-x { cursor:pointer; opacity:.6; font-size:10px; }
@@ -492,6 +503,11 @@
                         <table class="table table-bordered table-striped table-hover">
                             <thead class="thead-dark">
                                 <tr>
+                                    @if(auth()->user()->role == 'Admin')
+                                    <th width="36" class="text-center">
+                                        <input type="checkbox" id="selectAll" title="Select all on this page" style="width:15px;height:15px;cursor:pointer;accent-color:#1a6bff;">
+                                    </th>
+                                    @endif
                                     <th>ID</th>
                                     <th>University</th>
                                     <th>Department</th>
@@ -509,8 +525,33 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @if(auth()->user()->role == 'Admin')
+                                <tr id="selectAllBanner" style="display:none; background:#fff3cd;">
+                                    <td colspan="11" class="text-center py-2" style="font-size:13px;">
+                                        <span id="bannerPageMsg">
+                                            All <strong>{{ $programs->count() }}</strong> programs on this page are selected.
+                                        </span>
+                                        <span id="bannerAllMsg" style="display:none;">
+                                            All <strong>{{ $programs->total() }}</strong> programs are selected.
+                                        </span>
+                                        &nbsp;|&nbsp;
+                                        <a href="#" id="selectAllPagesBtn" style="font-weight:600; color:#1a6bff;">
+                                            Select all {{ $programs->total() }} programs{{ $hasAnyFilter ? ' matching current filters' : '' }}
+                                        </a>
+                                        <a href="#" id="clearAllPagesBtn" style="display:none; font-weight:600; color:#dc3545;">
+                                            Clear selection
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endif
                                 @forelse($programs as $key => $program)
                                     <tr>
+                                        @if(auth()->user()->role == 'Admin')
+                                        <td class="text-center">
+                                            <input type="checkbox" class="row-checkbox" value="{{ $program->id }}"
+                                                   style="width:15px;height:15px;cursor:pointer;accent-color:#1a6bff;">
+                                        </td>
+                                        @endif
                                         <td class="text-center">{{ $key+1 }}</td>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -636,7 +677,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center py-4">
+                                        <td colspan="11" class="text-center py-4">
                                             <div class="empty-state">
                                                 <i class="fas fa-database fa-3x text-muted mb-3"></i>
                                                 <h5>No programs found</h5>
@@ -701,6 +742,105 @@
 <script>
 $(function() {
     setTimeout(function() { $('.alert-dismissible').fadeOut('slow'); }, 5000);
+
+    var selectingAllPages = false;
+    var pageTotal  = {{ $programs->count() }};
+    var grandTotal = {{ $programs->total() }}; // filtered total across all pages
+
+    function updateBulkBtn() {
+        var n = selectingAllPages ? grandTotal : $('.row-checkbox:checked').length;
+        if (n > 0) {
+            $('#deleteSelectedBtn').show();
+            $('#selectedCount').text(n);
+        } else {
+            $('#deleteSelectedBtn').hide();
+        }
+        var pageChecked = $('.row-checkbox:checked').length;
+        var pageRows   = $('.row-checkbox').length;
+        $('#selectAll').prop('indeterminate', !selectingAllPages && pageChecked > 0 && pageChecked < pageRows);
+        $('#selectAll').prop('checked', selectingAllPages || (pageChecked === pageRows && pageRows > 0));
+    }
+
+    function showBanner(allPages) {
+        selectingAllPages = allPages;
+        if (allPages) {
+            $('#bannerPageMsg').hide();
+            $('#bannerAllMsg').show();
+            $('#selectAllPagesBtn').hide();
+            $('#clearAllPagesBtn').show();
+        } else {
+            $('#bannerPageMsg').show();
+            $('#bannerAllMsg').hide();
+            $('#selectAllPagesBtn').show();
+            $('#clearAllPagesBtn').hide();
+        }
+        $('#selectAllBanner').show();
+        updateBulkBtn();
+    }
+
+    function hideBanner() {
+        selectingAllPages = false;
+        $('#selectAllBanner').hide();
+        updateBulkBtn();
+    }
+
+    // Header checkbox — select / deselect current page
+    $('#selectAll').on('change', function() {
+        $('.row-checkbox').prop('checked', this.checked);
+        if (!this.checked) {
+            hideBanner();
+        } else {
+            // only show banner if there are more pages
+            if (grandTotal > pageTotal) showBanner(false);
+            updateBulkBtn();
+        }
+    });
+
+    // Individual row checkboxes
+    $(document).on('change', '.row-checkbox', function() {
+        if (!this.checked) {
+            selectingAllPages = false;
+            hideBanner();
+        } else {
+            var pageChecked = $('.row-checkbox:checked').length;
+            if (pageChecked === pageTotal && grandTotal > pageTotal) {
+                showBanner(false);
+            }
+            updateBulkBtn();
+        }
+    });
+
+    // "Select all X programs across all pages"
+    $('#selectAllPagesBtn').on('click', function(e) {
+        e.preventDefault();
+        showBanner(true);
+    });
+
+    // "Clear selection"
+    $('#clearAllPagesBtn').on('click', function(e) {
+        e.preventDefault();
+        $('.row-checkbox, #selectAll').prop('checked', false);
+        hideBanner();
+    });
+
+    // Before showing confirm modal — populate form
+    $('#deleteSelectedBtn').on('click', function() {
+        if (selectingAllPages) {
+            $('#confirmCount').text(grandTotal);
+            $('#formSelectAll').val('1');
+            $('#selectedIdsContainer').empty();
+        } else {
+            var ids = $('.row-checkbox:checked').map(function(){ return this.value; }).get();
+            $('#confirmCount').text(ids.length);
+            $('#formSelectAll').val('0');
+            $('#selectedIdsContainer').empty();
+            ids.forEach(function(id) {
+                $('#selectedIdsContainer').append(
+                    $('<input>').attr({ type:'hidden', name:'ids[]', value: id })
+                );
+            });
+        }
+    });
 });
 </script>
 @endsection

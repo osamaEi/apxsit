@@ -29,7 +29,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #7a0066cb;
+    background: #1a6bff;
     color: #fff;
 }
 .sidebar-header h6 { margin: 0; font-weight: 600; font-size: .95rem; }
@@ -72,7 +72,7 @@
     transition: background .15s;
 }
 .conv-item:hover { background: #f8f9fa; }
-.conv-item.active { background: #f0e6f0; border-left-color: #7a0066cb; }
+.conv-item.active { background: #f0e6f0; border-left-color: #1a6bff; }
 .conv-avatar {
     width: 38px; height: 38px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -95,12 +95,12 @@
 .contact-name { font-size: .83rem; font-weight: 500; flex: 1; }
 .btn-chat-start {
     width: 28px; height: 28px; border-radius: 50%; border: none;
-    background: #f0e6f0; color: #7a0066cb;
+    background: #f0e6f0; color: #1a6bff;
     display: flex; align-items: center; justify-content: center;
     font-size: .75rem; flex-shrink: 0; cursor: pointer;
     transition: background .15s;
 }
-.btn-chat-start:hover { background: #7a0066cb; color: #fff; }
+.btn-chat-start:hover { background: #1a6bff; color: #fff; }
 
 /* ── Chat Area ─────────────────────────────────────── */
 .chat-main {
@@ -140,7 +140,7 @@
     line-height: 1.45;
     position: relative;
 }
-.msg-row.me .msg-bubble   { background: #7a0066cb; color: #fff; border-bottom-right-radius: 4px; }
+.msg-row.me .msg-bubble   { background: #1a6bff; color: #fff; border-bottom-right-radius: 4px; }
 .msg-row.them .msg-bubble { background: #fff; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 .msg-time { font-size: .68rem; margin-top: 4px; opacity: .7; text-align: right; }
 .msg-sender { font-size: .72rem; font-weight: 600; margin-bottom: 3px; opacity: .8; }
@@ -177,11 +177,11 @@
 .input-row .btn-icon:hover { background: #e9ecef; color: #555; }
 .input-row .btn-send {
     width: 34px; height: 34px; border-radius: 50%; border: none;
-    background: #7a0066cb; color: #fff;
+    background: #1a6bff; color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-size: .85rem; cursor: pointer; flex-shrink: 0;
 }
-.input-row .btn-send:hover { background: #630053cb; }
+.input-row .btn-send:hover { background: #1558d6; }
 .attach-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: .8rem; color: #888; padding: 0 6px; }
 .recording-indicator { color: #ea5455; font-weight: 500; }
 </style>
@@ -427,7 +427,7 @@ $(document).ready(function() {
                     name = c.name;
                     av = c.avatar
                         ? `<div class="conv-avatar"><img src="/storage/${c.avatar}"></div>`
-                        : `<div class="conv-avatar" style="background:#f0e6f0;color:#7a0066;"><i class="fas fa-users"></i></div>`;
+                        : `<div class="conv-avatar" style="background:#f0e6f0;color:#1a6bff;"><i class="fas fa-users"></i></div>`;
                 } else {
                     let other = null, isStu = false;
                     if (isStudent) {
@@ -498,7 +498,7 @@ $(document).ready(function() {
             status = `${total} members`;
             avHtml = c.avatar
                 ? `<img src="/storage/${c.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">`
-                : `<div class="conv-avatar" style="background:#f0e6f0;color:#7a0066;"><i class="fas fa-users"></i></div>`;
+                : `<div class="conv-avatar" style="background:#f0e6f0;color:#1a6bff;"><i class="fas fa-users"></i></div>`;
             actions = `<button class="btn btn-sm btn-outline-secondary show-group-info" data-conversation-id="${c.id}"><i class="fas fa-info-circle mr-1"></i>Info</button>`;
         } else {
             let other = null, isStu = false;

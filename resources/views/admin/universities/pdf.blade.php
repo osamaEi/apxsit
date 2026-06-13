@@ -224,7 +224,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ public_path('logo2.jpg') }}" alt="DEVA Education" class="header-logo">
+        <img src="{{ public_path('Apx.jpeg') }}" alt="ABX SITE" class="header-logo">
         <div class="header-title">
             <h1>Universities List</h1>
         </div>
@@ -300,8 +300,8 @@
    
     <div class="footer">
         <div>
-            <img src="{{ public_path('logo2.jpg') }}" alt="DEVA Education" class="logo-footer">
-            DEVA Education © {{ date('Y') }} | All Rights Reserved
+            <img src="{{ public_path('Apx.jpeg') }}" alt="ABX SITE" class="logo-footer">
+            ABX SITE © {{ date('Y') }} | All Rights Reserved
         </div>
         <div class="page-number">Page 1 of 1</div>
     </div>
