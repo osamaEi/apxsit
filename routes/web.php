@@ -128,11 +128,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::delete('programs/delete-selected', [ProgramController::class, 'destroySelected'])->name('programs.destroy-selected');
     Route::get('programs/all-ids', [ProgramController::class, 'allFilteredIds'])->name('programs.all-ids');
     Route::get('programs/by-university/{universityId}', function ($universityId) {
-        $programs = \App\Models\Program::where('university_id', $universityId);
+        $base = \App\Models\Program::where('university_id', $universityId);
+        // optional language filter — used by application create to narrow degrees per language
+        if (request()->filled('language')) {
+            $filtered = $base->clone()->where('language', request('language'));
+            return response()->json([
+                'departments' => $filtered->clone()->distinct()->orderBy('department')->pluck('department'),
+                'languages'   => $base->clone()->distinct()->orderBy('language')->pluck('language'),
+                'degrees'     => $filtered->clone()->distinct()->orderBy('degree')->pluck('degree'),
+            ]);
+        }
         return response()->json([
-            'departments' => $programs->clone()->distinct()->orderBy('department')->pluck('department'),
-            'languages'   => $programs->clone()->distinct()->orderBy('language')->pluck('language'),
-            'degrees'     => $programs->clone()->distinct()->orderBy('degree')->pluck('degree'),
+            'departments' => $base->clone()->distinct()->orderBy('department')->pluck('department'),
+            'languages'   => $base->clone()->distinct()->orderBy('language')->pluck('language'),
+            'degrees'     => $base->clone()->distinct()->orderBy('degree')->pluck('degree'),
         ]);
     })->name('programs.by-university');
     Route::get('programs/departments-by-language/{universityId}/{language}', function ($universityId, $language) {

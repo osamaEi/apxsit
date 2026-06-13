@@ -355,8 +355,8 @@ $(function () {
                     .html(buildOptions(data.degrees, '— Select degree —', selDeg))
                     .prop('disabled', data.degrees.length === 0);
 
-                // if restoring old value, also load departments
-                if (selLang) loadDepartments(uniId, selLang, selDept);
+                // if restoring old value, also load departments+degrees by language
+                if (selLang) loadByLanguage(uniId, selLang, selDept, selDeg);
             })
             .fail(function () {
                 clearLoading('wrap-language');
@@ -366,21 +366,43 @@ $(function () {
             });
     }
 
-    // ── Step 2: language → departments ────────────────────────────
-    function loadDepartments(uniId, lang, selDept) {
+    // ── Step 2: language → departments + degrees ──────────────────
+    function loadByLanguage(uniId, lang, selDept, selDeg) {
         disableDep('#department', 'Loading…');
+        disableDep('#degree',     'Loading…');
         setLoading('wrap-department');
+        setLoading('wrap-degree');
 
-        $.getJSON(BASE_DEP + '/' + uniId + '/' + encodeURIComponent(lang))
-            .done(function (data) {
+        // load departments filtered by university+language
+        var deptReq = $.getJSON(BASE_DEP + '/' + uniId + '/' + encodeURIComponent(lang));
+        // load degrees filtered by university+language
+        var degReq  = $.getJSON(BASE + '/' + uniId + '?language=' + encodeURIComponent(lang));
+
+        $.when(deptReq, degReq)
+            .done(function (deptData, degData) {
                 clearLoading('wrap-department');
-                $('#department')
-                    .html(buildOptions(data.departments, '— Select department —', selDept))
-                    .prop('disabled', data.departments.length === 0);
+                clearLoading('wrap-degree');
+
+                var depts   = deptData[0].departments  || [];
+                var degrees = degData[0].degrees        || [];
+
+                if (depts.length === 0) {
+                    $('#department').html('<option value="">No departments for this language</option>').prop('disabled', true);
+                } else {
+                    $('#department').html(buildOptions(depts, '— Select department —', selDept)).prop('disabled', false);
+                }
+
+                if (degrees.length === 0) {
+                    $('#degree').html('<option value="">No degrees for this language</option>').prop('disabled', true);
+                } else {
+                    $('#degree').html(buildOptions(degrees, '— Select degree —', selDeg)).prop('disabled', false);
+                }
             })
             .fail(function () {
                 clearLoading('wrap-department');
+                clearLoading('wrap-degree');
                 disableDep('#department', 'Error — try again');
+                disableDep('#degree',     'Error — try again');
             });
     }
 
@@ -400,9 +422,10 @@ $(function () {
         var uniId = $('#university_id').val();
         var lang  = $(this).val();
         if (uniId && lang) {
-            loadDepartments(uniId, lang, '');
+            loadByLanguage(uniId, lang, '', '');
         } else {
             disableDep('#department', 'Select language first');
+            disableDep('#degree',     'Select university first');
         }
     });
 
