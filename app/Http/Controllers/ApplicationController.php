@@ -30,7 +30,7 @@ class ApplicationController extends Controller
         
         if ($user->role == 'Admin' || $user->role == 'Register') {
             // Admin sees all applications
-            $query = Application::with(['student', 'creator', 'university']);
+            $query = Application::with(['student.nationality', 'creator', 'university']);
             $students = Student::orderBy('first_name')->get();
 
         } else {
@@ -119,7 +119,7 @@ class ApplicationController extends Controller
         // Start with the base query and apply user role restrictions
         if ($user->role == 'Admin' || $user->role == 'Register') {
             // Admin sees all applications
-            $query = Application::with(['student', 'university', 'creator']);
+            $query = Application::with(['student.nationality', 'university', 'creator']);
         } else {
             // Get IDs of all users who have this user as their parent
             $childUserIds = User::where('parent_id', $user->id)->pluck('id')->toArray();
@@ -197,7 +197,7 @@ class ApplicationController extends Controller
     // Start with the base query and apply user role restrictions
     if ($user->role == 'Admin' || $user->role == 'Register') {
         // Admin sees all applications
-        $query = Application::with(['student', 'university', 'creator']);
+        $query = Application::with(['student.nationality', 'university', 'creator']);
     } else {
         // Get IDs of all users who have this user as their parent
         $childUserIds = User::where('parent_id', $user->id)->pluck('id')->toArray();

@@ -265,56 +265,31 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover" id="applications-table" width="100%" cellspacing="0">
-                            <thead class="bg-primary text-white">
+                            <thead style="background:#f39c12; color:#fff;">
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Code</th>
-                                    <th>Student</th>
+                                    <th>Actions</th>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>E-Mail</th>
+                                    <th>Phone</th>
+                                    <th>Passport ID</th>
+                                    <th>Date Of Birth</th>
+                                    <th>Nationality</th>
                                     <th>University</th>
                                     <th>Department</th>
                                     <th>Degree</th>
                                     <th>Language</th>
                                     <th>Status</th>
-                                    <th>Created</th>
-                                    <th>Creator</th>
-                                    <th>Register</th>
-                                    <th>Actions</th>
+                                    <th>Created On</th>
+                                    <th>Created By</th>
+                                    <th>User</th>
+                                    <th>Role</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($applications as $application)
+                                @php $student = $application->student; @endphp
                                 <tr>
-                                    <td>{{ $application->id }}</td>
-                                    <td>{{ $application->code }}</td>
-                                    <td>
-                                        <a href="{{ route('admin.students.show', $application->student_id) }}" class="font-weight-bold text-primary">
-                                            {{ $application->student->first_name }} {{ $application->student->last_name }}
-                                        </a>
-                                    </td>
-                                    <td>{{ $application->university->name }}</td>
-                                    <td>{{ $application->department }}</td>
-                                    <td>{{ $application->degree }}</td>
-                                    <td>{{ $application->language }}</td>
-                                    <td class="status-cell">
-                                        @include('partials.status-badge', ['status' => $application->status])
-                                    </td>
-                                    <td>{{ $application->created_at->format('d M Y') }}</td>
-                                    <td>
-                                        @if($application->creator)
-                                        {{ $application->creator->name }}
-                                        @else
-                                        SELF Student
-
-                                        @endif
-                                    
-                                    </td>
-                                    <td>
-                                        @if($application->files->count() > 0)
-                                            {{ $application->files->first()->uploader->name }}
-                                        @else
-                                            Not Yet
-                                        @endif
-                                    </td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('admin.applications.show', $application) }}" class="btn btn-info btn-sm" title="View">
@@ -323,27 +298,53 @@
                                             <a href="{{ route('admin.applications.edit', $application) }}" class="btn btn-primary btn-sm" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
                                             @if(auth()->user()->role == 'Admin' || auth()->user()->role == 'Register')
-
-<!-- Individual delete form for each application -->
-<form method="POST" action="{{ route('admin.applications.destroy', $application->id) }}" 
-    style="display: inline-block;"
-    onsubmit="return confirm('Are you sure you want to delete this application? This action cannot be undone.');">
-  @csrf
-  @method('DELETE')
-  <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-      <i class="fas fa-trash"></i>
-  </button>
-</form>
+                                            <form method="POST" action="{{ route('admin.applications.destroy', $application->id) }}"
+                                                style="display:inline-block;"
+                                                onsubmit="return confirm('Are you sure you want to delete this application?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
                                             @endif
-
                                         </div>
                                     </td>
+                                    <td>
+                                        @if($student && $student->photo_path)
+                                            <img src="{{ Storage::url($student->photo_path) }}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                                        @else
+                                            <div style="width:36px;height:36px;border-radius:50%;background:#4e73df;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">
+                                                {{ strtoupper(substr($student->first_name ?? '?', 0, 1)) }}
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('admin.students.show', $application->student_id) }}" class="font-weight-bold text-primary">
+                                            {{ $student->first_name ?? '' }} {{ $student->last_name ?? '' }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $student->email ?? '—' }}</td>
+                                    <td>{{ $student->phone ?? '—' }}</td>
+                                    <td>{{ $student->passport_id ?? '—' }}</td>
+                                    <td>{{ $student->date_of_birth ?? '—' }}</td>
+                                    <td>{{ $student->nationality->name ?? '—' }}</td>
+                                    <td>{{ $application->university->name ?? '—' }}</td>
+                                    <td>{{ $application->department }}</td>
+                                    <td>{{ $application->degree }}</td>
+                                    <td>{{ $application->language }}</td>
+                                    <td class="status-cell">
+                                        @include('partials.status-badge', ['status' => $application->status])
+                                    </td>
+                                    <td>{{ $application->created_at->format('Y-m-d') }}</td>
+                                    <td>{{ $application->creator->name ?? 'Student' }}</td>
+                                    <td>{{ $application->creator->name ?? 'Student' }}</td>
+                                    <td>{{ $application->creator->role ?? '—' }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">No applications found</td>
+                                    <td colspan="17" class="text-center">No applications found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
