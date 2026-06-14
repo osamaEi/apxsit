@@ -364,7 +364,7 @@
               </li>
               @endif
 
-
+<!-- 
               <li class="nav-item {{ request()->is('chat*') ? 'menu-open' : '' }}">
                 <a href="#" class="nav-link {{ request()->is('chat*') ? 'active' : '' }}">
                     <i class="nav-icon fas fa-users"></i>
@@ -382,7 +382,7 @@
                     </li>
                     
                 </ul>
-            </li>
+            </li> -->
             @if(auth()->user()->role === 'Admin' ||auth()->user()->role === 'Register' || auth()->user()->role === 'Employee')
 
             <li class="nav-item {{ request()->is('subagents*') ? 'menu-open' : '' }}">

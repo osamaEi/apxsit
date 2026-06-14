@@ -119,7 +119,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('announcements/publish/{announcement}', [AnnouncementController::class, 'publish'])->name('announcements.publish');
     Route::get('announcements/unpublish/{announcement}', [AnnouncementController::class, 'unpublish'])->name('announcements.unpublish');
     Route::resource('announcements', AnnouncementController::class);
-}); 
+});
+
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     // Program AJAX routes — must be before resource() to avoid {program} wildcard swallowing them
@@ -260,22 +261,27 @@ Route::get('admin/applications/{application}/files/{file}/download', [App\Http\C
     ->name('studentIndex');
    
 // Chat AJAX routes
-Route::prefix('chat')->middleware(['auth:web,student'])->group(function () {
-    Route::get('/conversations', [App\Http\Controllers\ChatController::class, 'getConversations']);
-    Route::post('/conversations', [App\Http\Controllers\ChatController::class, 'createConversation']);
-    Route::post('/conversations/group', [App\Http\Controllers\ChatController::class, 'createGroupConversation']);
-    Route::get('/conversations/{conversationId}', [App\Http\Controllers\ChatController::class, 'getConversation']);
-    Route::get('/conversations/{conversationId}/messages', [App\Http\Controllers\ChatController::class, 'getMessages']);
-    Route::post('/messages', [App\Http\Controllers\ChatController::class, 'sendMessage']);
-    Route::post('/status', [App\Http\Controllers\ChatController::class, 'updateUserStatus']);
-   
-    // Group chat routes
-    Route::get('/conversations/{conversationId}/group', [App\Http\Controllers\ChatController::class, 'getGroupInfo']);
-    Route::post('/conversations/{conversationId}/group', [App\Http\Controllers\ChatController::class, 'updateGroupInfo']);
-    Route::post('/conversations/{conversationId}/add-users', [App\Http\Controllers\ChatController::class, 'addUsersToGroup']);
-    Route::post('/conversations/{conversationId}/remove-user', [App\Http\Controllers\ChatController::class, 'removeUserFromGroup']);
-    Route::post('/conversations/{conversationId}/leave', [App\Http\Controllers\ChatController::class, 'leaveGroup']);
-    Route::get('/users/available/{conversationId}', [App\Http\Controllers\ChatController::class, 'getAvailableUsers']);
+Route::prefix('chat')->name('chat.')->middleware(['auth:web,student'])->group(function () {
+    Route::get('/conversations',                             [App\Http\Controllers\ChatController::class, 'getConversations'])->name('conversations');
+    Route::post('/conversations',                            [App\Http\Controllers\ChatController::class, 'createConversation'])->name('create');
+    Route::post('/conversations/group',                      [App\Http\Controllers\ChatController::class, 'createGroupConversation'])->name('create-group');
+    Route::get('/conversations/{conversationId}',            [App\Http\Controllers\ChatController::class, 'getConversation'])->name('conversation');
+    Route::get('/conversations/{conversationId}/messages',   [App\Http\Controllers\ChatController::class, 'getMessages'])->name('messages');
+    Route::post('/messages',                                 [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('send');
+    Route::post('/status',                                   [App\Http\Controllers\ChatController::class, 'updateUserStatus'])->name('status');
+    Route::get('/conversations/{conversationId}/group',      [App\Http\Controllers\ChatController::class, 'getGroupInfo'])->name('group-info');
+    Route::post('/conversations/{conversationId}/group',     [App\Http\Controllers\ChatController::class, 'updateGroupInfo'])->name('group-update');
+    Route::post('/conversations/{conversationId}/add-users', [App\Http\Controllers\ChatController::class, 'addUsersToGroup'])->name('group-add');
+    Route::post('/conversations/{conversationId}/remove-user',[App\Http\Controllers\ChatController::class, 'removeUserFromGroup'])->name('group-remove');
+    Route::post('/conversations/{conversationId}/leave',     [App\Http\Controllers\ChatController::class, 'leaveGroup'])->name('group-leave');
+    Route::get('/users/available/{conversationId}',          [App\Http\Controllers\ChatController::class, 'getAvailableUsers'])->name('available-users');
+    // Floating widget extras
+    Route::get('/users', function () {
+        $users    = \App\Models\User::where('id', '!=', auth()->id())->get(['id','name']);
+        $isAdmin  = auth()->check() && strtolower(auth()->user()->role) === 'admin';
+        $students = $isAdmin ? \App\Models\Student::get(['id','first_name','last_name']) : collect();
+        return response()->json(['users' => $users, 'students' => $students]);
+    })->name('users');
 });
 
 Route::middleware(['auth'])->group(function () {

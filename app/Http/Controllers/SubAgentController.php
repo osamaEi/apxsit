@@ -125,9 +125,11 @@ class SubAgentController extends Controller
      */
     public function show($id)
     {
-        $subagent = User::where('id', $id)
-            ->where('parent_id', Auth::id()) // Ensure subagent belongs to authenticated user
-            ->firstOrFail();
+        $query = User::where('id', $id);
+        if (Auth::user()->role !== 'Admin') {
+            $query->where('parent_id', Auth::id());
+        }
+        $subagent = $query->firstOrFail();
             
         return view('subagents.show', compact('subagent'));
     }
@@ -140,15 +142,15 @@ class SubAgentController extends Controller
      */
     public function edit($id)
     {
-        $subagent = User::where('id', $id)
-            ->where('parent_id', Auth::id()) // Ensure subagent belongs to authenticated user
-            ->firstOrFail();
-        
-            $countries = Country::whereIn('name',['Turkey','Cyprus'])->get();
-        
-        // Get the subagent's contracted countries with commission rates
+        $query = User::where('id', $id);
+        if (Auth::user()->role !== 'Admin') {
+            $query->where('parent_id', Auth::id());
+        }
+        $subagent = $query->firstOrFail();
+
+        $countries = Country::whereIn('name',['Turkey','Cyprus'])->get();
         $countryCommissions = $subagent->countryCommissions()->with('country')->get();
-            
+
         return view('subagents.edit', compact('subagent', 'countries', 'countryCommissions'));
     }
 
@@ -161,9 +163,11 @@ class SubAgentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $subagent = User::where('id', $id)
-            ->where('parent_id', Auth::id()) // Ensure subagent belongs to authenticated user
-            ->firstOrFail();
+        $query = User::where('id', $id);
+        if (Auth::user()->role !== 'Admin') {
+            $query->where('parent_id', Auth::id());
+        }
+        $subagent = $query->firstOrFail();
             
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -240,9 +244,11 @@ class SubAgentController extends Controller
      */
     public function destroy($id)
     {
-        $subagent = User::where('id', $id)
-            ->where('parent_id', Auth::id()) // Ensure subagent belongs to authenticated user
-            ->firstOrFail();
+        $query = User::where('id', $id);
+        if (Auth::user()->role !== 'Admin') {
+            $query->where('parent_id', Auth::id());
+        }
+        $subagent = $query->firstOrFail();
         
         // Delete the photo file if exists
         if ($subagent->photo) {

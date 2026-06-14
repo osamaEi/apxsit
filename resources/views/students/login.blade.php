@@ -1,494 +1,265 @@
-{{-- resources/views/auth/login.blade.php --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>ABX SITE - Login</title>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Styles -->
-    <style>
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        :root {
-            --primary: #FF4A60;
-            --primary-hover: #E0394D;
-            --secondary: #1a6bff;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --light-gray: #e2e8f0;
-            --danger: #ef4444;
-            --success: #10b981;
-            --primary: #1a6bff;
-            --primary-hover: #1558d6;
-            --light: #f4f7ff;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        .login-container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .login-image {
-            width: 55%;
-            background: linear-gradient(145deg, #0a1628 0%, #0d2550 50%, #0a3d99 100%);
-            
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 3rem;
-        }
-        
-        .login-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
-        }
-        
-        .image-content {
-            position: relative;
-            color: white;
-            max-width: 500px;
-        }
-        
-        .image-content h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
-        .image-content p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-        }
-        
-        .brand {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .brand-logo {
-            width: 180px;
-            height: auto;
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-form {
-            width: 45%;
-            padding: 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            background-color: #f4f7ff;
-        }
-        
-        .form-container {
-            max-width: 420px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        
-        .form-header {
-            margin-bottom: 2.5rem;
-        }
-        
-        .form-header h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--dark);
-            background: linear-gradient(to right, #1a6bff, #1a6bff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-        }
-        
-        .form-header p {
-            color: var(--gray);
-        }
-        
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .input-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--light-gray);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: #1a6bff;
-            box-shadow: 0 0 0 3px rgba(255, 74, 96, 0.15), 0 0 0 1px rgba(26,107,255,0.2);
-        }
-        
-        .input-error {
-            color: var(--danger);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-        
-        .remember-forgot {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-        
-        .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .checkbox {
-            width: 1rem;
-            height: 1rem;
-            cursor: pointer;
-            border-radius: 0.25rem;
-            border: 1px solid var(--light-gray);
-            accent-color: #1a6bff;
-        }
-        
-        .remember-text {
-            font-size: 0.875rem;
-            color: var(--gray);
-        }
-        
-        .forgot-link {
-            font-size: 0.875rem;
-            color: #1a6bff;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        .forgot-link:hover {
-            color: var(--primary-hover);
-            text-decoration: underline;
-        }
-        
-        .login-button {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, #1a6bff 0%, #1a6bff 100%);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(26,107,255,0.2);
-        }
-        
-        .login-button:hover {
-            background: linear-gradient(135deg, #1a6bff 20%, #1a6bff 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(26,107,255,0.3);
-        }
-        
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 1.5rem 0;
-            color: var(--gray);
-            font-size: 0.875rem;
-        }
-        
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background-color: var(--light-gray);
-        }
-        
-        .divider::before {
-            margin-right: 1rem;
-        }
-        
-        .divider::after {
-            margin-left: 1rem;
-        }
-        
-        .social-login {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .social-button {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem;
-            border: 1px solid var(--light-gray);
-            border-radius: 0.5rem;
-            background-color: white;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .social-button:hover {
-            background-color: var(--light);
-        }
-        
-        .social-icon {
-            width: 1.25rem;
-            height: 1.25rem;
-        }
-        
-        .register-link-container {
-            text-align: center;
-            font-size: 0.875rem;
-            color: var(--gray);
-        }
-        
-        .register-link {
-            color: #1a6bff;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        .register-link:hover {
-            color: var(--primary-hover);
-            text-decoration: underline;
-        }
-        
-        .session-status {
-            background-color: var(--success);
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .status-close {
-            cursor: pointer;
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-        
-        .logo-container {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .small-logo {
-            width: 120px;
-            height: auto;
-            margin: 0 auto;
-        }
-        
-        @media (max-width: 1024px) {
-            .login-image {
-                width: 45%;
-                padding: 2rem;
-            }
-            
-            .login-form {
-                width: 55%;
-                padding: 2rem;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                overflow-y: auto;
-            }
-            
-            .login-container {
-                flex-direction: column;
-                height: auto;
-                min-height: 100vh;
-            }
-            
-            .login-image {
-                width: 100%;
-                height: 35vh;
-                min-height: 300px;
-                padding: 1.5rem;
-            }
-            
-            .login-form {
-                width: 100%;
-                padding: 2rem 1.5rem;
-            }
-            
-            .form-container {
-                max-width: 100%;
-            }
-        }
-        
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            body:not(.light-mode) {
-                --light: #0f172a;
-                --dark: #f8fafc;
-                --light-gray: #334155;
-                background-color: var(--light);
-                color: var(--dark);
-            }
-            
-            body:not(.light-mode) .input-field {
-                background-color: #1e293b;
-                color: var(--dark);
-            }
-            
-            body:not(.light-mode) .social-button {
-                background-color: #1e293b;
-                color: var(--dark);
-            }
-            
-            body:not(.light-mode) .social-button:hover {
-                background-color: #334155;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<title>Student Portal — DEVA Education</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('plugins/fontawesome-free/css/all.min.css') }}">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',sans-serif;overflow:hidden}
+
+body{
+    background:#060f1e;
+    color:#fff;
+    display:flex;
+    align-items:stretch;
+}
+
+/* ── LEFT PANEL ── */
+.lp-left{
+    width:55%;
+    position:relative;
+    background:linear-gradient(160deg,#060f1e 0%,#0a1e3d 45%,#060f1e 100%);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:40px 48px;
+    overflow:hidden;
+}
+.lp-left::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 20%,rgba(26,107,255,.18) 0%,transparent 50%),
+        radial-gradient(circle at 85% 75%,rgba(26,107,255,.12) 0%,transparent 45%);
+    pointer-events:none;
+}
+.lp-dots{
+    position:absolute;
+    inset:0;
+    background-image:radial-gradient(circle,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:28px 28px;
+    pointer-events:none;
+}
+/* floating decorative circles */
+.lp-circle{position:absolute;border-radius:50%;border:1px solid rgba(26,107,255,.15);pointer-events:none}
+.lp-c1{width:380px;height:380px;right:-80px;top:-80px;}
+.lp-c2{width:240px;height:240px;right:30px;top:30px;border-color:rgba(26,107,255,.1);}
+.lp-c3{width:180px;height:180px;left:-50px;bottom:120px;border-color:rgba(26,107,255,.08);}
+
+.lp-brand{position:relative;z-index:2;display:flex;align-items:center;gap:14px}
+.lp-brand img{height:44px;width:auto;object-fit:contain;border-radius:8px}
+.lp-brand-name{font-size:16px;font-weight:800;background:linear-gradient(135deg,#fff,#93c5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lp-brand-sub{font-size:11px;color:rgba(255,255,255,.45);font-weight:400;-webkit-text-fill-color:rgba(255,255,255,.45);display:block;margin-top:-1px}
+
+.lp-hero{position:relative;z-index:2;margin-top:auto;padding-bottom:12px}
+.lp-hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(26,107,255,.2);border:1px solid rgba(26,107,255,.35);border-radius:20px;padding:5px 14px;font-size:12px;color:#93c5fd;font-weight:500;margin-bottom:24px}
+.lp-hero-tag span{width:6px;height:6px;border-radius:50%;background:#60a5fa;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.lp-hero h2{font-size:2.6rem;font-weight:800;line-height:1.15;margin-bottom:16px;background:linear-gradient(135deg,#fff 30%,#93c5fd 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lp-hero p{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;max-width:420px;margin-bottom:32px}
+
+.lp-stats{display:flex;gap:14px}
+.lp-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 20px;flex:1}
+.lp-stat-val{font-size:22px;font-weight:700;color:#fff;line-height:1}
+.lp-stat-lbl{font-size:11px;color:rgba(255,255,255,.4);margin-top:3px}
+
+/* ── RIGHT PANEL ── */
+.lp-right{
+    width:45%;
+    background:#f0f4f8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 32px;
+    position:relative;
+}
+.lp-right::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at 80% 15%,rgba(26,107,255,.06) 0%,transparent 50%);
+    pointer-events:none;
+}
+.lp-form-box{width:100%;max-width:400px;position:relative;z-index:1}
+
+.lp-form-logo{display:flex;align-items:center;justify-content:center;margin-bottom:32px}
+.lp-form-logo img{height:52px;width:auto;object-fit:contain;border-radius:10px;box-shadow:0 4px 20px rgba(26,107,255,.25)}
+
+.lp-form-hd{margin-bottom:28px}
+.lp-form-hd h1{font-size:1.75rem;font-weight:800;color:#0f172a;margin-bottom:6px}
+.lp-form-hd h1 span{background:linear-gradient(135deg,#1a6bff,#0a3d99);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.lp-form-hd p{font-size:13px;color:#64748b}
+
+.lp-field{margin-bottom:18px}
+.lp-label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em}
+.lp-input-wrap{position:relative}
+.lp-input-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:14px;pointer-events:none}
+.lp-input{
+    width:100%;padding:11px 13px 11px 38px;
+    border:1.5px solid #e2e8f0;
+    border-radius:11px;
+    font-size:13px;
+    font-family:'Inter',sans-serif;
+    color:#0f172a;
+    background:#fff;
+    outline:none;
+    transition:border-color .2s,box-shadow .2s;
+}
+.lp-input:focus{border-color:#1a6bff;box-shadow:0 0 0 3px rgba(26,107,255,.12)}
+.lp-input::placeholder{color:#94a3b8}
+.lp-error{color:#dc2626;font-size:12px;margin-top:5px;display:flex;align-items:center;gap:4px}
+
+.lp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.lp-check-wrap{display:flex;align-items:center;gap:7px;cursor:pointer}
+.lp-check{width:15px;height:15px;border-radius:4px;border:1.5px solid #cbd5e1;accent-color:#1a6bff;cursor:pointer}
+.lp-check-lbl{font-size:13px;color:#64748b;cursor:pointer}
+
+.lp-btn{
+    width:100%;padding:12px;
+    background:linear-gradient(135deg,#1a6bff,#0a3d99);
+    color:#fff;border:none;
+    border-radius:11px;
+    font-size:14px;font-weight:600;
+    cursor:pointer;font-family:'Inter',sans-serif;
+    box-shadow:0 4px 18px rgba(26,107,255,.35);
+    transition:all .2s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    margin-bottom:20px;
+}
+.lp-btn:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 6px 24px rgba(26,107,255,.45)}
+.lp-btn:active{transform:translateY(0)}
+
+.lp-back{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:12px;color:#64748b;text-decoration:none;
+    border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 18px;
+    background:#fff;transition:all .2s;font-weight:500;
+}
+.lp-back:hover{border-color:#1a6bff;color:#1a6bff;background:#f0f5ff}
+
+.lp-alert-success{
+    background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);
+    color:#059669;padding:11px 14px;border-radius:10px;
+    margin-bottom:18px;font-size:13px;
+    display:flex;align-items:center;gap:8px;
+}
+
+@media(max-width:900px){
+    .lp-left{width:42%;padding:32px 28px}
+    .lp-right{width:58%;padding:32px 24px}
+    .lp-hero h2{font-size:2rem}
+    .lp-stats{flex-direction:column;gap:8px}
+}
+@media(max-width:680px){
+    body{overflow-y:auto;flex-direction:column}
+    .lp-left{width:100%;min-height:42vh;padding:28px 24px}
+    .lp-right{width:100%;padding:28px 20px}
+    .lp-hero h2{font-size:1.7rem}
+}
+</style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-image">
-            <div class="brand">
-                <img src="{{ asset('Apx.jpeg') }}" alt="ABX SITE" class="brand-logo">
-            </div>
-            <div class="image-content">
-                <h2>Welcome to ABX SITE</h2>
-                <p>Access your dashboard to manage courses, track student progress, monitor registrations, and accomplish your daily tasks with our streamlined platform.</p>
-            </div>
-        </div>
-        
-        <div class="login-form">
-            <div class="form-container">
-                <div class="logo-container">
-                    <img src="{{ asset('Apx.jpeg') }}" alt="ABX SITE" style="height:70px; width:auto; border-radius:8px;">
-                </div>
-                
-                <div class="form-header">
-                    <h1>Student Sign in</h1>
-                    <p>Enter your credentials to access your student portal</p>
-                </div>
-                
-                @if (session('status'))
-                    <div class="session-status">
-                        {{ session('status') }}
-                        <span class="status-close">&times;</span>
-                    </div>
-                @endif
-                
-                <form method="POST" action="{{ route('student.login') }}">
-                    @csrf
-                    
-                    <div class="input-group">
-                        <label for="email" class="input-label">Email address</label>
-                        <input id="email" class="input-field" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" />
-                        @error('email')
-                            <div class="input-error">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="password" class="input-label">Password</label>
-                        <input id="password" class="input-field" type="password" name="password" required autocomplete="current-password" />
-                        @error('password')
-                            <div class="input-error">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="remember-forgot">
-                        <div class="remember-me">
-                            <input id="remember_me" type="checkbox" class="checkbox" name="remember">
-                            <label for="remember_me" class="remember-text">Remember me</label>
-                        </div>
-                        
-                        {{-- @if (Route::has('password.request'))
-                            <a class="forgot-link" href="{{ route('password.request') }}">
-                                Forgot password?
-                            </a>
-                        @endif --}}
-                    </div>
-                    
-                    <button type="submit" class="login-button">
-                        Sign in as Student
-                    </button>
-                </form>
 
-                <div style="text-align:center; margin-top:1.25rem;">
-                    <a href="{{ url('/') }}" style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.875rem; color:#1a6bff; text-decoration:none; font-weight:500; padding:0.5rem 1.25rem; border:1.5px solid #1a6bff; border-radius:8px; transition:all 0.2s;">
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
-                        Back to Main Login
-                    </a>
-                </div>
+{{-- LEFT --}}
+<div class="lp-left">
+    <div class="lp-dots"></div>
+    <div class="lp-circle lp-c1"></div>
+    <div class="lp-circle lp-c2"></div>
+    <div class="lp-circle lp-c3"></div>
+
+    <div class="lp-brand">
+        <img src="{{ asset('Apx.jpeg') }}" alt="APX">
+        <div>
+            <div class="lp-brand-name">DEVA Education</div>
+            <span class="lp-brand-sub">Student Portal</span>
+        </div>
+    </div>
+
+    <div class="lp-hero">
+        <div class="lp-hero-tag">
+            <span></span> Student Access Portal
+        </div>
+        <h2>Track your<br>academic journey</h2>
+        <p>Access your applications, upload documents, and stay in touch with your advisor — all from one place.</p>
+        <div class="lp-stats">
+            <div class="lp-stat">
+                <div class="lp-stat-val">100+</div>
+                <div class="lp-stat-lbl">Universities</div>
+            </div>
+            <div class="lp-stat">
+                <div class="lp-stat-val">24/7</div>
+                <div class="lp-stat-lbl">Support</div>
+            </div>
+            <div class="lp-stat">
+                <div class="lp-stat-val">Fast</div>
+                <div class="lp-stat-lbl">Processing</div>
             </div>
         </div>
     </div>
-    
-    <script>
-        // Close status message
-        document.addEventListener('DOMContentLoaded', function() {
-            const statusClose = document.querySelector('.status-close');
-            if (statusClose) {
-                statusClose.addEventListener('click', function() {
-                    this.parentElement.style.display = 'none';
-                });
-            }
-        });
-    </script>
+</div>
+
+{{-- RIGHT --}}
+<div class="lp-right">
+    <div class="lp-form-box">
+        <div class="lp-form-logo">
+            <img src="{{ asset('Apx.jpeg') }}" alt="APX Logo">
+        </div>
+
+        <div class="lp-form-hd">
+            <h1>Welcome back, <span>Student</span></h1>
+            <p>Sign in to access your student portal</p>
+        </div>
+
+        @if(session('status'))
+        <div class="lp-alert-success"><i class="fas fa-check-circle"></i> {{ session('status') }}</div>
+        @endif
+
+        <form method="POST" action="{{ route('student.login') }}">
+            @csrf
+            <div class="lp-field">
+                <label class="lp-label" for="email">Email Address</label>
+                <div class="lp-input-wrap">
+                    <i class="fas fa-envelope lp-input-ico"></i>
+                    <input id="email" class="lp-input" type="email" name="email"
+                        value="{{ old('email') }}" required autofocus autocomplete="username"
+                        placeholder="you@example.com">
+                </div>
+                @error('email')<div class="lp-error"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>@enderror
+            </div>
+
+            <div class="lp-field">
+                <label class="lp-label" for="password">Password</label>
+                <div class="lp-input-wrap">
+                    <i class="fas fa-lock lp-input-ico"></i>
+                    <input id="password" class="lp-input" type="password" name="password"
+                        required autocomplete="current-password" placeholder="••••••••">
+                </div>
+                @error('password')<div class="lp-error"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>@enderror
+            </div>
+
+            <div class="lp-row">
+                <label class="lp-check-wrap">
+                    <input id="remember_me" type="checkbox" class="lp-check" name="remember">
+                    <span class="lp-check-lbl">Remember me</span>
+                </label>
+            </div>
+
+            <button type="submit" class="lp-btn">
+                <i class="fas fa-sign-in-alt"></i> Sign in to Portal
+            </button>
+        </form>
+
+        <a href="{{ url('/') }}" class="lp-back">
+            <i class="fas fa-arrow-left"></i> Back to Main Login
+        </a>
+    </div>
+</div>
+
 </body>
 </html>

@@ -1,318 +1,116 @@
-<nav class="main-header navbar navbar-expand navbar-white navbar-light">
-  <!-- Left navbar links -->
+<style>
+.main-header.navbar{
+    background: linear-gradient(90deg,#060f1e,#0a1e3d) !important;
+    border-bottom: 1px solid rgba(26,107,255,.2) !important;
+    padding: 0 16px !important;
+    min-height: 50px !important;
+}
+.main-header .nav-link{
+    color: rgba(255,255,255,.65) !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+    transition: all .15s !important;
+}
+.main-header .nav-link:hover{ background:rgba(255,255,255,.07) !important; color:#fff !important; }
+.main-header [data-widget="pushmenu"]{ color:rgba(255,255,255,.7) !important; }
+.sp-topnav-name{
+    font-size:13px; font-weight:600; color:rgba(255,255,255,.75);
+    padding: 4px 10px;
+}
+.sp-topnav-badge{
+    display:inline-flex;align-items:center;gap:5px;
+    background:rgba(26,107,255,.2);border:1px solid rgba(26,107,255,.3);
+    border-radius:20px;padding:3px 10px;font-size:11px;color:#60a5fa;font-weight:500;
+}
+#sp-theme-toggle{
+    background: rgba(255,255,255,.07) !important;
+    border: 1px solid rgba(255,255,255,.1) !important;
+    border-radius: 8px !important;
+    color: rgba(255,255,255,.65) !important;
+    padding: 5px 12px !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    display:flex;align-items:center;gap:6px;
+    transition: all .2s !important;
+}
+#sp-theme-toggle:hover{ background:rgba(26,107,255,.2) !important; color:#fff !important; border-color:rgba(26,107,255,.4) !important; }
+.sp-topnav-av{
+    width:30px;height:30px;border-radius:50%;
+    background:linear-gradient(135deg,#1a6bff,#0a3d99);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:#fff;
+    box-shadow:0 0 0 2px rgba(26,107,255,.3);overflow:hidden;
+}
+.sp-topnav-av img{width:100%;height:100%;object-fit:cover}
+</style>
+
+@php $student = Auth::guard('student')->user(); @endphp
+
+<nav class="main-header navbar navbar-expand navbar-dark" style="margin-left:210px">
   <ul class="navbar-nav">
     <li class="nav-item">
       <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
     </li>
-    <li class="nav-item d-none d-sm-inline-block">
-      <a href="" class="nav-link"></a>
-    </li>
   </ul>
 
-  <!-- Right navbar links -->
-  <ul class="navbar-nav ml-auto">
-    <!-- Messages Dropdown Menu -->
-   
+  <ul class="navbar-nav ml-auto" style="gap:6px;align-items:center">
 
-    <!-- Notifications Dropdown Menu -->
-
-    
-    <!-- Dark Mode Toggle -->
     <li class="nav-item">
-      <button id="theme-toggle" class="btn btn-link nav-link">
-        <i class="fas fa-moon"></i> Dark Mode
-      </button>
+        <span class="sp-topnav-badge">
+            <i class="fas fa-graduation-cap"></i>
+            {{ $student->status ?? 'Student' }}
+        </span>
     </li>
- 
-    <!-- User Menu -->
 
+    <li class="nav-item">
+        <span class="sp-topnav-name">{{ $student->first_name }} {{ $student->last_name }}</span>
+    </li>
+
+    <li class="nav-item">
+        <button id="sp-theme-toggle" onclick="spToggleTopTheme()">
+            <i class="fas fa-moon" id="sp-theme-icon"></i>
+            <span id="sp-theme-lbl">Dark</span>
+        </button>
+    </li>
+
+    <li class="nav-item" style="padding:0 4px">
+        <div class="sp-topnav-av">
+            @if($student->photo_path)
+                <img src="{{ Storage::url($student->photo_path) }}" alt="">
+            @else
+                {{ strtoupper(substr($student->first_name,0,1)) }}{{ strtoupper(substr($student->last_name,0,1)) }}
+            @endif
+        </div>
+    </li>
+
+    <li class="nav-item">
+        <form action="{{ route('student.logout') }}" method="POST" style="margin:0">
+            @csrf
+            <button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;color:rgba(239,68,68,.7)!important;font-size:13px">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </form>
+    </li>
   </ul>
 </nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script>
-$(document).ready(function() {
-  // Check for saved theme preference or system preference
-  const savedTheme = localStorage.getItem('theme') || 
-                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  
-  // Apply theme on initial load
-  if (savedTheme === 'dark') {
-    $('body').addClass('dark-mode');
-    $('#theme-toggle').html('<i class="fas fa-sun"></i> Light Mode');
-    applyDarkModeStyles();
-  } else {
-    $('body').removeClass('dark-mode');
-    $('#theme-toggle').html('<i class="fas fa-moon"></i> Dark Mode');
-  }
-  
-  // Toggle theme button
-  $('#theme-toggle').click(function() {
-    if ($('body').hasClass('dark-mode')) {
-      // Switch to light mode
-      $('body').removeClass('dark-mode');
-      $(this).html('<i class="fas fa-moon"></i> Dark Mode');
-      localStorage.setItem('theme', 'light');
-      removeDarkModeStyles();
-    } else {
-      // Switch to dark mode
-      $('body').addClass('dark-mode');
-      $(this).html('<i class="fas fa-sun"></i> Light Mode');
-      localStorage.setItem('theme', 'dark');
-      applyDarkModeStyles();
+function spToggleTopTheme(){
+    var isDark = document.body.classList.toggle('sp-light-mode');
+    var icon   = document.getElementById('sp-theme-icon');
+    var lbl    = document.getElementById('sp-theme-lbl');
+    if(isDark){ icon.className='fas fa-sun'; lbl.textContent='Light'; }
+    else       { icon.className='fas fa-moon'; lbl.textContent='Dark'; }
+    localStorage.setItem('sp-layout-theme', isDark ? 'light' : 'dark');
+}
+(function(){
+    if(localStorage.getItem('sp-layout-theme')==='light'){
+        document.body.classList.add('sp-light-mode');
+        var ic=document.getElementById('sp-theme-icon'); if(ic) ic.className='fas fa-sun';
+        var lb=document.getElementById('sp-theme-lbl'); if(lb) lb.textContent='Light';
     }
-  });
-  
-  // Function to apply specific dark mode styles to fix visibility issues
-  function applyDarkModeStyles() {
-    // Base container and card styles
-    $('.container, .container-fluid').css('background-color', '#121212');
-    $('.info-card').css({
-      'background-color': '#1e1e1e',
-      'border-color': '#444'
-    });
-    $('.card-header').css({
-      'background-color': '#2c2c2c',
-      'border-color': '#444'
-    });
-    $('.card-header h3').css('color', '#f1f1f1');
-    $('.card-body').css({
-      'color': '#f1f1f1',
-      'background-color': '#1e1e1e'
-    });
-    
-    // Notification items
-    $('.notification-item').css({
-      'background-color': 'rgba(255, 255, 255, 0.08)',
-      'border-color': '#444'
-    });
-    $('.notification-content h4').css('color', '#f1f1f1');
-    $('.notification-content p').css('color', '#ddd');
-    
-    // Status indicators
-    $('.status-indicator-text').css('font-weight', '600');
-    $('.text-success').css('color', '#4cd964');
-    $('.text-warning').css('color', '#ffcc00');
-    $('.text-danger').css('color', '#ff3b30');
-    $('.text-info').css('color', '#5ac8fa');
-    $('.text-primary').css('color', '#007bff');
-    
-    // Progress elements
-    $('.application-progress').css('background-color', '#1e1e1e');
-    $('.progress-steps').css('border-color', '#444');
-    $('.progress-step').css('color', '#ddd');
-    $('.progress-step .step-icon').css({
-      'background-color': '#2c2c2c',
-      'border-color': '#666'
-    });
-    $('.progress-step.completed .step-icon').css({
-      'background-color': '#007bff',
-      'color': '#fff'
-    });
-    $('.progress').css('background-color', 'rgba(255, 255, 255, 0.1)');
-    
-    // Tables
-    $('.table').css({
-      'color': '#f1f1f1',
-      'background-color': 'transparent'
-    });
-    $('.table-hover tbody tr:hover').css('background-color', 'rgba(255, 255, 255, 0.08)');
-    $('.thead-light th').css({
-      'background-color': '#2c2c2c',
-      'color': '#f1f1f1',
-      'border-color': '#444'
-    });
-    $('.table td, .table th').css('border-color', '#444');
-    
-    // Document checklist items
-    $('.checklist-items').css('background-color', '#1e1e1e');
-    $('.checklist-item').css({
-      'color': '#f1f1f1',
-      'border-color': '#444',
-      'background-color': 'rgba(255, 255, 255, 0.05)'
-    });
-    $('.checklist-item.completed').css('background-color', 'rgba(0, 123, 255, 0.1)');
-    $('.checklist-item.optional').css({
-      'color': '#aaa',
-      'background-color': 'transparent'
-    });
-    $('.check-icon').css('color', 'inherit');
-    $('.fas.fa-check-circle').css('color', '#4cd964');
-    $('.fas.fa-times-circle').css('color', '#ff3b30');
-    $('.fas.fa-circle-notch').css('color', '#aaa');
-    $('.check-status').css('color', '#ddd');
-    
-    // Contact information
-    $('.contact-info').css('background-color', '#1e1e1e');
-    $('.contact-item').css({
-      'background-color': 'rgba(255, 255, 255, 0.05)',
-      'border-color': '#444'
-    });
-    $('.contact-icon').css('color', '#007bff');
-    $('.contact-details h4').css('color', '#f1f1f1');
-    $('.contact-details p').css('color', '#ddd');
-    
-    // Next steps list
-    $('.next-steps-list').css('background-color', '#1e1e1e');
-    $('.next-step-item').css({
-      'border-color': '#444',
-      'background-color': 'rgba(255, 255, 255, 0.05)'
-    });
-    $('.step-number').css({
-      'background-color': '#007bff',
-      'color': '#fff'
-    });
-    $('.step-content h4').css('color', '#f1f1f1');
-    $('.step-content p').css('color', '#ddd');
-    
-    // Buttons
-    $('.btn-outline-primary').css({
-      'color': '#007bff',
-      'border-color': '#007bff'
-    });
-    $('.btn-outline-primary:hover').css({
-      'background-color': '#007bff',
-      'color': '#fff'
-    });
-    $('.btn-warning').css({
-      'background-color': '#ffcc00',
-      'border-color': '#e6b800',
-      'color': '#212529'
-    });
-    $('.btn-info').css({
-      'background-color': '#5ac8fa',
-      'border-color': '#46b8da',
-      'color': '#fff'
-    });
-    
-    // Tab navigation
-    $('.nav-tabs').css('border-color', '#444');
-    $('.nav-tabs .nav-link').css({
-      'color': '#ddd',
-      'background-color': 'transparent',
-      'border-color': 'transparent'
-    });
-    $('.nav-tabs .nav-link.active').css({
-      'color': '#f1f1f1',
-      'background-color': '#2c2c2c',
-      'border-color': '#444 #444 #2c2c2c'
-    });
-    
-    // Fix for icon colors in various contexts
-    $('.card-header .fas').css('color', '#f1f1f1');
-    $('.notification-icon .fas').css('color', 'inherit');
-    $('.btn .fas').css('color', 'inherit');
-    
-    // Links
-    $('a:not(.btn)').css('color', '#007bff');
-    $('a:not(.btn):hover').css({
-      'color': '#0056b3',
-      'text-decoration': 'underline'
-    });
-  }
-  
-  // Function to remove applied dark mode styles
-  function removeDarkModeStyles() {
-    // Reset all the custom styles
-    $('.container, .container-fluid').css('background-color', '');
-    $('.info-card, .card-header, .card-body').css({
-      'background-color': '',
-      'border-color': '',
-      'color': ''
-    });
-    $('.card-header h3').css('color', '');
-    
-    // Reset notification items
-    $('.notification-item, .notification-content h4, .notification-content p').css({
-      'background-color': '',
-      'border-color': '',
-      'color': ''
-    });
-    
-    // Reset status indicators
-    $('.status-indicator-text').css('font-weight', '');
-    $('.text-success, .text-warning, .text-danger, .text-info, .text-primary').css('color', '');
-    
-    // Reset progress elements
-    $('.application-progress, .progress-steps, .progress-step, .progress').css({
-      'background-color': '',
-      'border-color': '',
-      'color': ''
-    });
-    $('.progress-step .step-icon, .progress-step.completed .step-icon').css({
-      'background-color': '',
-      'border-color': '',
-      'color': ''
-    });
-    
-    // Reset tables
-    $('.table, .table-hover tbody tr:hover, .thead-light th, .table td, .table th').css({
-      'color': '',
-      'background-color': '',
-      'border-color': ''
-    });
-    
-    // Reset document checklist
-    $('.checklist-items, .checklist-item, .checklist-item.completed, .checklist-item.optional').css({
-      'color': '',
-      'background-color': '',
-      'border-color': ''
-    });
-    $('.check-icon, .fas.fa-check-circle, .fas.fa-times-circle, .fas.fa-circle-notch, .check-status').css('color', '');
-    
-    // Reset contact information
-    $('.contact-info, .contact-item, .contact-icon, .contact-details h4, .contact-details p').css({
-      'background-color': '',
-      'border-color': '',
-      'color': ''
-    });
-    
-    // Reset next steps list
-    $('.next-steps-list, .next-step-item, .step-number, .step-content h4, .step-content p').css({
-      'background-color': '',
-      'border-color': '',
-      'color': ''
-    });
-    
-    // Reset buttons
-    $('.btn-outline-primary, .btn-outline-primary:hover, .btn-warning, .btn-info').css({
-      'color': '',
-      'background-color': '',
-      'border-color': ''
-    });
-    
-    // Reset tab navigation
-    $('.nav-tabs, .nav-tabs .nav-link, .nav-tabs .nav-link.active').css({
-      'color': '',
-      'background-color': '',
-      'border-color': ''
-    });
-    
-    // Reset icon colors
-    $('.card-header .fas, .notification-icon .fas, .btn .fas').css('color', '');
-    
-    // Reset links
-    $('a:not(.btn), a:not(.btn):hover').css({
-      'color': '',
-      'text-decoration': ''
-    });
-  }
-  
-  // Also listen for system preference changes
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    const newTheme = e.matches ? 'dark' : 'light';
-    if (!localStorage.getItem('theme')) { // Only auto-switch if user hasn't manually set preference
-      if (newTheme === 'dark') {
-        $('body').addClass('dark-mode');
-        $('#theme-toggle').html('<i class="fas fa-sun"></i> Light Mode');
-        applyDarkModeStyles();
-      } else {
-        $('body').removeClass('dark-mode');
-        $('#theme-toggle').html('<i class="fas fa-moon"></i> Dark Mode');
-        removeDarkModeStyles();
-      }
-    }
-  });
-});
+})();
 </script>

@@ -245,14 +245,6 @@ body.dark-mode .select2-container--bootstrap4 .select2-selection__arrow b {
                     </div>
                     <div class="card-body">
 
-                        <div class="form-group">
-                            <label class="field-label" for="code">Application Code</label>
-                            <input type="text" class="form-control @error('code') is-invalid @enderror"
-                                   id="code" name="code" value="{{ old('code') }}"
-                                   placeholder="e.g. APP-2024-001">
-                            <small class="text-muted">Leave blank to auto-generate</small>
-                            @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
 
                         <div class="alert alert-info py-2 px-3" style="font-size:12px;">
                             <i class="fas fa-info-circle mr-1"></i>

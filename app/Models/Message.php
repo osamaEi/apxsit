@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 class Message extends Model
 {
@@ -31,6 +32,21 @@ class Message extends Model
         'updated_at' => 'datetime',
         'voice_message_duration' => 'float',
     ];
+
+    public function getBodyAttribute($value)
+    {
+        if (!$value) return $value;
+        try {
+            $decrypted = Crypt::decryptString($value);
+            // Strip PHP serialize wrapper if present: s:N:"...";
+            if (preg_match('/^s:\d+:"(.*)";$/s', $decrypted, $m)) {
+                return $m[1];
+            }
+            return $decrypted;
+        } catch (\Exception $e) {
+            return $value;
+        }
+    }
 
     /**
      * Get the conversation that owns the message.
