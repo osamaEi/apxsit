@@ -321,6 +321,20 @@
                     border: 1px solid #bae6fd; border-radius: 8px;
                     padding: 7px 12px; display: flex; align-items: center; gap: 6px;
                 }
+                /* file picker button */
+                .doc-file-pick-btn {
+                    display: inline-flex; align-items: center; gap: 7px;
+                    padding: 7px 16px; border-radius: 9px; font-size: 12px; font-weight: 600;
+                    background: #f1f5f9; color: #334155; border: 1.5px dashed #cbd5e1;
+                    cursor: pointer; transition: background .15s, border-color .15s;
+                    white-space: nowrap; flex-shrink: 0;
+                }
+                .doc-file-pick-btn:hover { background: #e2e8f0; border-color: #94a3b8; }
+                .doc-file-pick-btn.selected { background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
+                .doc-uploading-msg {
+                    font-size: 12px; color: #64748b;
+                    display: flex; align-items: center; gap: 4px;
+                }
                 </style>
 
                 @php
@@ -441,17 +455,30 @@
                                         Waiting for <strong>{{ $step['who'] }}</strong> to upload
                                     </div>
                                     @if($canUpload)
-                                    <form action="{{ route('admin.applications.upload-file', $application) }}" method="POST" enctype="multipart/form-data">
+                                    <form id="upload-form-{{ $step['key'] }}"
+                                          action="{{ route('admin.applications.upload-file', $application) }}"
+                                          method="POST" enctype="multipart/form-data">
                                         @csrf
                                         <input type="hidden" name="file_type" value="{{ $step['key'] }}">
                                         <div class="doc-upload-row">
-                                            <div class="custom-file">
-                                                <input type="file" class="custom-file-input" id="file_{{ $step['key'] }}" name="file">
-                                                <label class="custom-file-label" for="file_{{ $step['key'] }}">Choose file…</label>
-                                            </div>
-                                            <button type="submit" class="doc-upload-btn">
-                                                <i class="fas fa-upload"></i> Upload
+                                            <label class="doc-file-pick-btn" for="file_{{ $step['key'] }}" id="label_{{ $step['key'] }}">
+                                                <i class="fas fa-paperclip"></i>
+                                                <span id="fname_{{ $step['key'] }}">اختر ملف…</span>
+                                            </label>
+                                            <input type="file"
+                                                   id="file_{{ $step['key'] }}"
+                                                   name="file"
+                                                   style="display:none"
+                                                   onchange="docFileSelected(this, '{{ $step['key'] }}')">
+                                            <button type="submit"
+                                                    id="submit_{{ $step['key'] }}"
+                                                    class="doc-upload-btn"
+                                                    style="display:none">
+                                                <i class="fas fa-upload"></i> رفع
                                             </button>
+                                            <div id="uploading_{{ $step['key'] }}" style="display:none" class="doc-uploading-msg">
+                                                <span class="spinner-border spinner-border-sm mr-1"></span> جاري الرفع…
+                                            </div>
                                         </div>
                                     </form>
                                     @else
@@ -977,7 +1004,7 @@ $(document).ready(function() {
     // Helper function for file size formatting
     function   (sizeInKB) {
         if (!sizeInKB) return '0 KB';
-        
+
         sizeInKB = parseFloat(sizeInKB);
         if (sizeInKB < 1024) {
             return sizeInKB.toFixed(2) + ' KB';
@@ -985,5 +1012,35 @@ $(document).ready(function() {
             return (sizeInKB / 1024).toFixed(2) + ' MB';
         }
     }
+
+    // ── Document upload: select → show name + submit button ──────────
+    function docFileSelected(input, key) {
+        var file = input.files[0];
+        if (!file) return;
+
+        // Show filename on the label
+        var label = document.getElementById('label_' + key);
+        var fname = document.getElementById('fname_' + key);
+        if (fname) fname.textContent = file.name;
+        if (label) label.classList.add('selected');
+
+        // Show the submit button
+        var btn = document.getElementById('submit_' + key);
+        if (btn) btn.style.display = 'inline-flex';
+    }
+
+    // Auto-submit when Upload button is clicked: show spinner
+    document.addEventListener('DOMContentLoaded', function () {
+        ['first_acceptance','payment_file','final_acceptance','awaiting_student_card'].forEach(function(key) {
+            var form = document.getElementById('upload-form-' + key);
+            if (!form) return;
+            form.addEventListener('submit', function () {
+                var btn = document.getElementById('submit_' + key);
+                var spinner = document.getElementById('uploading_' + key);
+                if (btn) btn.style.display = 'none';
+                if (spinner) spinner.style.display = 'flex';
+            });
+        });
+    });
 </script>
 @endsection
