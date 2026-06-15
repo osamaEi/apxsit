@@ -258,97 +258,152 @@
                         fdUpdate(panel.id, lblId, placeholder);
                     }
                     </script>
-                    <!-- Applications Table -->
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Applications List</h6>
-                        <span class="badge badge-info">{{ $applications->total() }} results found</span>
+                    <style>
+                    .app-table-wrap { border-radius:12px; overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,.08); margin-top:12px; }
+                    .app-table { width:100%; border-collapse:collapse; font-size:13px; }
+                    .app-table thead tr th {
+                        background: linear-gradient(135deg,#1a6bff 0%,#0a3d99 100%);
+                        color:#fff;
+                        font-weight:700;
+                        font-size:11px;
+                        text-transform:uppercase;
+                        letter-spacing:.08em;
+                        padding:14px 16px;
+                        white-space:nowrap;
+                        border:none;
+                        border-right:1px solid rgba(255,255,255,.1);
+                        position:relative;
+                        vertical-align:middle;
+                    }
+                    .app-table thead tr th:last-child { border-right:none; }
+                    .app-table thead tr th i {
+                        display:block;
+                        font-size:15px;
+                        margin-bottom:4px;
+                        opacity:.75;
+                    }
+                    .app-table thead tr { box-shadow:0 3px 8px rgba(10,61,153,.25); }
+                    .app-table tbody tr { border-bottom:1px solid #f1f5f9; transition:background .12s; }
+                    .app-table tbody tr:hover { background:#f0f5ff; }
+                    .app-table tbody tr:last-child { border-bottom:none; }
+                    .app-table td { padding:10px 12px; vertical-align:middle; color:#374151; border:none; }
+                    .app-table td.actions-td { white-space:nowrap; }
+                    .app-av {
+                        width:38px;height:38px;border-radius:50%;object-fit:cover;
+                        border:2px solid #e0e7ff;
+                    }
+                    .app-av-init {
+                        width:38px;height:38px;border-radius:50%;
+                        background:linear-gradient(135deg,#1a6bff,#0a3d99);
+                        display:inline-flex;align-items:center;justify-content:center;
+                        color:#fff;font-size:13px;font-weight:700;
+                        border:2px solid #e0e7ff;
+                    }
+                    .app-name { font-weight:600; color:#1a6bff; text-decoration:none; }
+                    .app-name:hover { text-decoration:underline; }
+                    .app-muted { color:#9ca3af; font-size:12px; }
+                    .app-pill {
+                        display:inline-block; padding:3px 10px; border-radius:20px;
+                        font-size:11px; font-weight:600; white-space:nowrap;
+                    }
+                    .app-pill-blue  { background:#eff6ff; color:#1d4ed8; }
+                    .app-pill-gray  { background:#f3f4f6; color:#6b7280; }
+                    .app-pill-green { background:#ecfdf5; color:#059669; }
+                    .app-btn { width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;border:none;cursor:pointer;transition:opacity .15s; }
+                    .app-btn:hover { opacity:.8; }
+                    .app-btn-view   { background:#e0f2fe; color:#0284c7; }
+                    .app-btn-edit   { background:#e0e7ff; color:#4f46e5; }
+                    .app-btn-del    { background:#fee2e2; color:#dc2626; }
+                    .app-tbl-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+                    .app-count-badge { background:#1a6bff; color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
+                    </style>
+
+                    <div class="app-tbl-header">
+                        <span style="font-size:13px;font-weight:700;color:#374151;">
+                            <i class="fas fa-list-alt mr-1" style="color:#1a6bff"></i> Applications List
+                        </span>
+                        <span class="app-count-badge">{{ $applications->total() }} results</span>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="applications-table" width="100%" cellspacing="0">
-                            <thead style="background:#f39c12; color:#fff;">
+
+                    <div class="app-table-wrap">
+                    <div class="table-responsive" style="margin:0">
+                        <table class="app-table" id="applications-table">
+                            <thead>
                                 <tr>
-                                    <th>Actions</th>
-                                    <th>Photo</th>
-                                    <th>Name</th>
-                                    <th>E-Mail</th>
-                                    <th>Phone</th>
-                                    <th>Passport ID</th>
-                                    <th>Date Of Birth</th>
-                                    <th>Nationality</th>
-                                    <th>University</th>
-                                    <th>Department</th>
-                                    <th>Degree</th>
-                                    <th>Language</th>
-                                    <th>Status</th>
-                                    <th>Created On</th>
-                                    <th>Created By</th>
-                                    <th>User</th>
-                                    <th>Role</th>
+                                    <th style="width:90px;text-align:center"><i class="fas fa-cogs"></i>Actions</th>
+                                    <th style="text-align:center"><i class="fas fa-user-circle"></i>Photo</th>
+                                    <th><i class="fas fa-id-badge"></i>Name</th>
+                                    <th><i class="fas fa-envelope"></i>E-Mail</th>
+                                    <th><i class="fas fa-phone"></i>Phone</th>
+                                    <th><i class="fas fa-passport"></i>Passport ID</th>
+                                    <th><i class="fas fa-birthday-cake"></i>Date Of Birth</th>
+                                    <th><i class="fas fa-globe"></i>Nationality</th>
+                                    <th><i class="fas fa-university"></i>University</th>
+                                    <th><i class="fas fa-sitemap"></i>Department</th>
+                                    <th><i class="fas fa-graduation-cap"></i>Degree</th>
+                                    <th><i class="fas fa-language"></i>Language</th>
+                                    <th><i class="fas fa-traffic-light"></i>Status</th>
+                                    <th><i class="fas fa-calendar-alt"></i>Created On</th>
+                                    <th><i class="fas fa-user-edit"></i>Created By</th>
+                                    <th><i class="fas fa-shield-alt"></i>Role</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($applications as $application)
                                 @php $student = $application->student; @endphp
                                 <tr>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ route('admin.applications.show', $application) }}" class="btn btn-info btn-sm" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('admin.applications.edit', $application) }}" class="btn btn-primary btn-sm" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            @if(auth()->user()->role == 'Admin' || auth()->user()->role == 'Register')
-                                            <form method="POST" action="{{ route('admin.applications.destroy', $application->id) }}"
-                                                style="display:inline-block;"
-                                                onsubmit="return confirm('Are you sure you want to delete this application?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if($student && $student->photo_path)
-                                            <img src="{{ Storage::url($student->photo_path) }}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
-                                        @else
-                                            <div style="width:36px;height:36px;border-radius:50%;background:#4e73df;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">
-                                                {{ strtoupper(substr($student->first_name ?? '?', 0, 1)) }}
-                                            </div>
+                                    <td class="actions-td">
+                                        <a href="{{ route('admin.applications.show', $application) }}" class="app-btn app-btn-view" title="View"><i class="fas fa-eye"></i></a>
+                                        <a href="{{ route('admin.applications.edit', $application) }}" class="app-btn app-btn-edit" title="Edit"><i class="fas fa-edit"></i></a>
+                                        @if(auth()->user()->role == 'Admin' || auth()->user()->role == 'Register')
+                                        <form method="POST" action="{{ route('admin.applications.destroy', $application->id) }}" style="display:inline" onsubmit="return confirm('Delete this application?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="app-btn app-btn-del" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </form>
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('admin.students.show', $application->student_id) }}" class="font-weight-bold text-primary">
+                                        @if($student && $student->photo_path)
+                                            <img src="{{ Storage::url($student->photo_path) }}" class="app-av" alt="">
+                                        @else
+                                            <span class="app-av-init">{{ strtoupper(substr($student->first_name ?? '?', 0, 1)) }}</span>
+                                        @endif
+                                    </td>
+                                    <td style="white-space:nowrap">
+                                        <a href="{{ route('admin.students.show', $application->student_id) }}" class="app-name">
                                             {{ $student->first_name ?? '' }} {{ $student->last_name ?? '' }}
                                         </a>
                                     </td>
-                                    <td>{{ $student->email ?? '—' }}</td>
-                                    <td>{{ $student->phone ?? '—' }}</td>
-                                    <td>{{ $student->passport_id ?? '—' }}</td>
-                                    <td>{{ $student->date_of_birth ?? '—' }}</td>
-                                    <td>{{ $student->nationality->name ?? '—' }}</td>
-                                    <td>{{ $application->university->name ?? '—' }}</td>
-                                    <td>{{ $application->department }}</td>
-                                    <td>{{ $application->degree }}</td>
+                                    <td class="app-muted">{{ $student->email ?? '—' }}</td>
+                                    <td style="white-space:nowrap">{{ $student->phone ?? '—' }}</td>
+                                    <td><span class="app-pill app-pill-gray">{{ $student->passport_id ?? '—' }}</span></td>
+                                    <td style="white-space:nowrap">{{ $student->date_of_birth ?? '—' }}</td>
+                                    <td><span class="app-pill app-pill-blue">{{ $student->nationality->name ?? '—' }}</span></td>
+                                    <td style="white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis">{{ $application->university->name ?? '—' }}</td>
+                                    <td style="white-space:nowrap">{{ $application->department }}</td>
+                                    <td><span class="app-pill app-pill-green">{{ $application->degree }}</span></td>
                                     <td>{{ $application->language }}</td>
-                                    <td class="status-cell">
-                                        @include('partials.status-badge', ['status' => $application->status])
+                                    <td>@include('partials.status-badge', ['status' => $application->status])</td>
+                                    <td style="white-space:nowrap">{{ $application->created_at->format('Y-m-d') }}</td>
+                                    <td style="white-space:nowrap">{{ $application->creator->name ?? '—' }}</td>
+                                    <td>
+                                        @if($application->creator)
+                                        <span class="app-pill app-pill-gray">{{ $application->creator->role }}</span>
+                                        @else —
+                                        @endif
                                     </td>
-                                    <td>{{ $application->created_at->format('Y-m-d') }}</td>
-                                    <td>{{ $application->creator->name ?? 'Student' }}</td>
-                                    <td>{{ $application->creator->name ?? 'Student' }}</td>
-                                    <td>{{ $application->creator->role ?? '—' }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="17" class="text-center">No applications found</td>
+                                    <td colspan="16" class="text-center py-4 app-muted">
+                                        <i class="fas fa-inbox fa-2x mb-2 d-block" style="opacity:.3"></i>
+                                        No applications found
+                                    </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
                     </div>
                     
                     <!-- Pagination -->

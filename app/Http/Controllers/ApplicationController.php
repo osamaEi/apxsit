@@ -409,7 +409,7 @@ class ApplicationController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             
             $applicationData['created_by'] = auth()->id();
-            $applicationData['status'] = 'Pending Review';
+            $applicationData['status'] = 'Application Submitted';
             
             $application = Application::create($applicationData);
             
@@ -443,21 +443,37 @@ class ApplicationController extends Controller
                 }
             }
             
-            if (NotificationSetting::isEnabled('new_application')) {
-                $notifyRoles = NotificationSetting::rolesFor('new_application');
-                $registers = User::whereIn('role', $notifyRoles)->get();
-                foreach ($registers as $register) {
-                    Notification::create([
-                        'type' => 'New Application',
-                        'notifiable_type' => 'App\Models\User',
-                        'notifiable_id' => $register->id,
-                        'data' => [
-                            'message' => "New application #{$application->id} has been submitted",
-                            'application_id' => $application->id,
-                            'created_by' => $register->name,
-                        ]
-                    ]);
+            $creatorId  = auth()->id();
+            $student    = $application->student;
+            $appRef     = "Application #{$application->id} — {$student->first_name} {$student->last_name}";
+            $notifData  = fn($recipientId) => [
+                'type'            => 'New Application',
+                'notifiable_type' => 'App\Models\User',
+                'notifiable_id'   => $recipientId,
+                'data'            => [
+                    'message'        => "New application submitted: {$appRef}",
+                    'application_id' => $application->id,
+                    'created_by'     => $creatorId,
+                ],
+            ];
+
+            // 1. Notify every Register user
+            User::where('role', 'Register')->each(function ($register) use ($notifData, $creatorId) {
+                if ($register->id !== $creatorId) {
+                    Notification::create($notifData($register->id));
                 }
+            });
+
+            // 2. Notify the creator themselves (confirmation) — only if they are not Register
+            //    so Register creating their own app doesn't get double-notified
+            if (auth()->user()->role !== 'Register') {
+                Notification::create(array_merge($notifData($creatorId), [
+                    'data' => [
+                        'message'        => "✅ Your application was submitted successfully: {$appRef}",
+                        'application_id' => $application->id,
+                        'created_by'     => $creatorId,
+                    ],
+                ]));
             }
             
        
@@ -1041,114 +1057,140 @@ public function uploadMissingFiles(Request $request, Application $application)
 public function uploadFile(Request $request, Application $application)
 {
     $request->validate([
-        'file' => 'required|file|max:10240',
+        'file'      => 'required|file|max:10240',
         'file_type' => 'required|string|in:first_acceptance,payment_file,final_acceptance,awaiting_student_card',
     ]);
-   
-    // Start database transaction
+
+    $fileLabels = [
+        'first_acceptance'     => 'First Acceptance Letter',
+        'payment_file'         => 'Payment Confirmation',
+        'final_acceptance'     => 'Final Acceptance Letter',
+        'awaiting_student_card'=> 'Student Card',
+    ];
+
+    $fileType    = $request->file_type;
+    $fileLabel   = $fileLabels[$fileType];
+    $uploaderId  = auth()->id();
+
+    // ── Permission gate ──────────────────────────────────────────
+    // First Acceptance & Final Acceptance → Register only
+    // Payment Confirmation & Student Card → Sales (creator) only
+    $uploaderRole = auth()->user()->role;
+    if (in_array($fileType, ['first_acceptance', 'final_acceptance']) && $uploaderRole !== 'Register') {
+        return back()->with('error', 'Only Register can upload this document.');
+    }
+    if (in_array($fileType, ['payment_file', 'awaiting_student_card']) && $uploaderRole !== 'Sales' && $uploaderRole !== 'Admin') {
+        return back()->with('error', 'Only the Sales agent can upload this document.');
+    }
+
     DB::beginTransaction();
-   
     try {
-        // Get the file description based on the file type
-        $fileDescriptions = [
-            'first_acceptance' => 'First Acceptance Letter',
-            'payment_file' => 'Payment Confirmation',
-            'final_acceptance' => 'Final Acceptance Letter',
-            'awaiting_student_card' => 'Awaiting Student Card'
-        ];
-       
-        $fileType = $request->file_type;
-        $fileDescription = $fileDescriptions[$fileType] ?? 'Unknown Document';
-       
-        // Check if file already exists
-        $existingFile = $application->files()
+        // Replace if already exists
+        $existing = $application->files()
             ->where('file_type', 'official_document')
             ->where('description', $fileType)
             ->first();
-       
-        if ($existingFile) {
-            // Remove existing file
-            Storage::disk('public')->delete($existingFile->file_path);
-            $existingFile->delete();
-            Log::info("Replaced existing {$fileDescription} for application ID: {$application->id}");
-        }
-       
-        // Store the new file
-        $file = $this->storeApplicationFile(
-            $application,
-            $request->file('file'),
-            'official_document',
-            $fileType
-        );
-       
-        // Log successful file upload
-        Log::info("Successfully uploaded {$fileDescription} for application ID: {$application->id}");
-        
-        // Send notifications based on file type
-        $currentUserId = auth()->id();
-        
-        // For first acceptance or final acceptance, notify users of configured roles
-        if (($fileType === 'first_acceptance' || $fileType === 'final_acceptance')
-            && NotificationSetting::isEnabled('file_uploaded')) {
-            $notifyRoles = NotificationSetting::rolesFor('file_uploaded');
-            $recipients = User::whereIn('role', $notifyRoles)->get();
-            foreach ($recipients as $recipient) {
-                Notification::create([
-                    'type' => 'file_uploaded',
-                    'notifiable_type' => 'App\Models\User',
-                    'notifiable_id' => $recipient->id,
-                    'data' => [
-                        'message' => "{$fileDescription} has been uploaded for application #{$application->id}",
-                        'application_id' => $application->id,
-                        'uploaded_by' => $currentUserId,
-                        'file_type' => $fileType
-                    ]
-                ]);
-            }
+        if ($existing) {
+            Storage::disk('public')->delete($existing->file_path);
+            $existing->delete();
         }
 
-        // For payment file, notify users of configured roles
-        if ($fileType === 'payment_file' && NotificationSetting::isEnabled('payment_uploaded')) {
-            $notifyRoles = NotificationSetting::rolesFor('payment_uploaded');
-            $recipients = User::whereIn('role', $notifyRoles)->get();
-            foreach ($recipients as $recipient) {
-                if ($recipient->id !== $currentUserId) {
-                    Notification::create([
-                        'type' => 'payment_uploaded',
-                        'notifiable_type' => 'App\Models\User',
-                        'notifiable_id' => $recipient->id,
-                        'data' => [
-                            'message' => "Payment Confirmation has been uploaded for application #{$application->id}",
-                            'application_id' => $application->id,
-                            'uploaded_by' => $currentUserId,
-                            'file_type' => $fileType
-                        ]
-                    ]);
-                }
-            }
+        // Store file
+        $this->storeApplicationFile($application, $request->file('file'), 'official_document', $fileType);
+
+        // ── Status advance ───────────────────────────────────────
+        $newStatus = match($fileType) {
+            'first_acceptance'      => 'First Acceptance',
+            'payment_file'          => 'Payment Confirmed',
+            'final_acceptance'      => 'Final Acceptance',
+            'awaiting_student_card' => 'Completed',
+        };
+        $application->status = $newStatus;
+        $application->save();
+
+        // ── Targeted notifications ───────────────────────────────
+        // Reload files after the new one was stored
+        $application->load('files');
+        $officialFiles = $application->files->where('file_type', 'official_document');
+
+        // Specific people involved in this application's document chain
+        $salesCreator   = $application->creator; // Sales who created the application
+
+        $firstAccFile   = $officialFiles->where('description', 'first_acceptance')->first();
+        $registerWhoUploadedFirst = $firstAccFile ? User::find($firstAccFile->uploaded_by) : null;
+
+        $finalAccFile   = $officialFiles->where('description', 'final_acceptance')->first();
+        $registerWhoUploadedFinal = $finalAccFile ? User::find($finalAccFile->uploaded_by) : null;
+
+        // Helper: send notification to one specific user (never to yourself)
+        $notify = function(?int $recipientId, string $type, string $message) use ($application, $uploaderId, $fileType) {
+            if (!$recipientId || $recipientId === $uploaderId) return;
+            Notification::create([
+                'type'            => $type,
+                'notifiable_type' => 'App\Models\User',
+                'notifiable_id'   => $recipientId,
+                'data'            => [
+                    'message'        => $message,
+                    'application_id' => $application->id,
+                    'uploaded_by'    => $uploaderId,
+                    'file_type'      => $fileType,
+                ],
+            ]);
+        };
+
+        $appRef = "Application #{$application->id} — {$application->student->first_name} {$application->student->last_name}";
+
+        switch ($fileType) {
+
+            // STEP 1: Register uploaded First Acceptance
+            // → notify the Sales agent who created the application
+            case 'first_acceptance':
+                $notify(
+                    $salesCreator?->id,
+                    'file_uploaded',
+                    "✅ First Acceptance Letter uploaded for {$appRef}. Please now upload the Payment Confirmation."
+                );
+                break;
+
+            // STEP 2: Sales uploaded Payment Confirmation
+            // → notify the exact Register who uploaded the First Acceptance
+            case 'payment_file':
+                $notify(
+                    $registerWhoUploadedFirst?->id,
+                    'payment_uploaded',
+                    "💰 Payment Confirmed for {$appRef}. Please now upload the Final Acceptance Letter."
+                );
+                break;
+
+            // STEP 3: Register uploaded Final Acceptance
+            // → notify the Sales agent who created the application
+            case 'final_acceptance':
+                $notify(
+                    $salesCreator?->id,
+                    'file_uploaded',
+                    "✅ Final Acceptance Letter uploaded for {$appRef}. Please now upload the Student Card."
+                );
+                break;
+
+            // STEP 4: Sales uploaded Student Card → application is Completed
+            // → notify the Register who uploaded the Final Acceptance (the one who did the last step)
+            case 'awaiting_student_card':
+                $notify(
+                    $registerWhoUploadedFinal?->id,
+                    'file_uploaded',
+                    "🎓 Student Card uploaded for {$appRef}. Application is now Completed."
+                );
+                break;
         }
-       
-        // If this is a student card file, update the application status to Completed
-        if ($fileType === 'awaiting_student_card') {
-            // Update application status
-            $application->status = 'Completed';
-            $application->save();
-            
-            Log::info("Application ID: {$application->id} status updated to Completed after student card upload");
-        }
-       
-        // Commit the transaction
+
         DB::commit();
-       
+
         return redirect()->route('admin.applications.show', $application)
-            ->with('success', "{$fileDescription} uploaded successfully.");
-           
+            ->with('success', "{$fileLabel} uploaded successfully. Status updated to: {$newStatus}.");
+
     } catch (\Exception $e) {
         DB::rollBack();
-       
-        // Log the error
-        Log::error("Error uploading file: " . $e->getMessage());
-       
+        Log::error("uploadFile error: " . $e->getMessage());
         return redirect()->route('admin.applications.show', $application)
             ->with('error', 'Error uploading file: ' . $e->getMessage());
     }

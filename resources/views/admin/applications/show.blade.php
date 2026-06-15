@@ -202,274 +202,271 @@
                     </h6>
                
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- First Acceptance Letter -->
-                        <div class="col-lg-6 mb-4">
-                            <div class="card h-100 {{ $firstAcceptance ? 'border-success' : 'border-warning' }}">
-                                <div class="card-header py-2 d-flex justify-content-between align-items-center {{ $firstAcceptance ? 'bg-success text-white' : 'bg-warning text-dark' }}">
-                                    <h6 class="m-0 font-weight-bold">
-                                        <i class="fas {{ $firstAcceptance ? 'fa-check-circle' : 'fa-exclamation-circle' }} mr-1"></i>
-                                        First Acceptance Letter
-                                    </h6>
-                                    @if($firstAcceptance)
-                                    <span class="badge badge-light">Uploaded by 
-                                         {{ $firstAcceptance->uploader ? $firstAcceptance->uploader->name : 'Unknown' }}</span>
-                                    @else
-                                    <span class="badge badge-light text-warning">Missing</span>
-                                    @endif
-                                </div>
-                                <div class="card-body">
-                                    @if($firstAcceptance)
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <div>
-                                                <i class="fas {{  ($firstAcceptance->mime_type ?? 'application/pdf') }} fa-2x mr-2 text-primary"></i>
-                                            </div>
-                                            <div class="text-right">
-                                                <small class="text-muted d-block">Uploaded {{ $firstAcceptance->created_at->format('M d, Y') }}</small>
-                                                <small class="text-muted d-block">{{   ($firstAcceptance->file_size ?? 0) }}</small>
-                                            </div>
-                                        </div>
-                                        <h5 class="mb-1 text-truncate">{{ $firstAcceptance->original_filename }}</h5>
-                                        <div class="btn-group btn-block mt-3">
-                                            <a href="{{ route('admin.applications.files.download', ['application' => $application->id, 'file' => $firstAcceptance->id]) }}" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-download mr-1"></i> Download
-                                            </a>
-                                       
-                                        </div>
-                                    @else
-                                        <div class="text-center py-3">
-                                            <i class="fas fa-file-upload fa-3x text-warning mb-3"></i>
-                                            <p class="mb-2">No first acceptance letter uploaded yet.</p>
-            
-                                            @if(auth()->user()->role =="Register")
-                                            <form action="{{ route('admin.applications.upload-file', $application) }}" method="POST" enctype="multipart/form-data" class="mt-3">
-                                                @csrf
-                                                <input type="hidden" name="file_type" value="first_acceptance">
-                                                <div class="custom-file mb-2">
-                                                    <input type="file" class="custom-file-input" id="first_acceptance" name="file">
-                                                    <label class="custom-file-label text-left" for="first_acceptance">Choose file</label>
-                                                </div>
-                                                <button type="submit" class="btn btn-warning btn-block">
-                                                    <i class="fas fa-upload mr-1"></i> Upload Now
-                                                </button>
-                                            </form>
-                                            @else 
-                                            <b>Only Register Upload this</b>
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
+                <div class="card-body p-0">
+                <style>
+                .doc-timeline { padding: 8px 0; }
+                .doc-step {
+                    display: flex; align-items: stretch;
+                    position: relative; padding: 0 24px 0 0;
+                }
+                .doc-step:not(:last-child)::after {
+                    content: ''; position: absolute;
+                    left: 38px; top: 72px; bottom: 0;
+                    width: 2px; background: #e5e9f2; z-index: 0;
+                }
+                /* left column: number bubble */
+                .doc-step-num {
+                    width: 76px; flex-shrink: 0;
+                    display: flex; flex-direction: column; align-items: center;
+                    padding-top: 20px; position: relative; z-index: 1;
+                }
+                .doc-bubble {
+                    width: 40px; height: 40px; border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 15px; font-weight: 700; flex-shrink: 0;
+                    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+                }
+                .doc-bubble.done  { background: #10b981; color: #fff; }
+                .doc-bubble.next  { background: #f59e0b; color: #fff; }
+                .doc-bubble.lock  { background: #e5e9f2; color: #94a3b8; }
+
+                /* right column: the card */
+                .doc-step-body {
+                    flex: 1; margin: 12px 0 12px 0;
+                    border-radius: 14px; overflow: hidden;
+                    border: 1.5px solid #e5e9f2;
+                    background: #fff;
+                    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+                    transition: box-shadow .2s;
+                }
+                .doc-step-body:hover { box-shadow: 0 4px 16px rgba(0,0,0,.09); }
+                .doc-step-body.done  { border-color: #10b981; }
+                .doc-step-body.next  { border-color: #f59e0b; }
+                .doc-step-body.lock  { border-color: #e5e9f2; background: #f9fafb; }
+
+                .doc-step-hd {
+                    display: flex; align-items: center; justify-content: space-between;
+                    padding: 13px 18px 12px;
+                    border-bottom: 1px solid #f1f5f9;
+                }
+                .doc-step-hd.done { background: linear-gradient(90deg,#ecfdf5,#f0fdf8); }
+                .doc-step-hd.next { background: linear-gradient(90deg,#fffbeb,#fff8e0); }
+                .doc-step-hd.lock { background: #f9fafb; }
+
+                .doc-step-title {
+                    font-size: 13.5px; font-weight: 700;
+                    display: flex; align-items: center; gap: 8px; margin: 0;
+                }
+                .doc-step-title.done { color: #059669; }
+                .doc-step-title.next { color: #b45309; }
+                .doc-step-title.lock { color: #94a3b8; }
+
+                .doc-badge {
+                    font-size: 11px; font-weight: 600; padding: 3px 10px;
+                    border-radius: 20px; white-space: nowrap;
+                }
+                .doc-badge.done  { background: #d1fae5; color: #059669; }
+                .doc-badge.next  { background: #fef3c7; color: #b45309; }
+                .doc-badge.lock  { background: #f1f5f9; color: #94a3b8; }
+
+                .doc-step-bd { padding: 16px 18px; }
+
+                /* uploaded file row */
+                .doc-file-row {
+                    display: flex; align-items: center; gap: 14px;
+                }
+                .doc-file-ico {
+                    width: 44px; height: 44px; border-radius: 10px;
+                    background: #eff6ff; color: #1a6bff;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 20px; flex-shrink: 0;
+                }
+                .doc-file-meta { flex: 1; min-width: 0; }
+                .doc-file-name { font-weight: 600; font-size: 13px; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                .doc-file-date { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+                .doc-file-by   { font-size: 11px; color: #64748b; margin-top: 1px; }
+                .doc-dl-btn {
+                    padding: 7px 16px; border-radius: 9px; font-size: 12px; font-weight: 600;
+                    background: linear-gradient(135deg,#1a6bff,#0a3d99); color: #fff;
+                    border: none; white-space: nowrap; cursor: pointer; text-decoration: none;
+                    display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+                }
+                .doc-dl-btn:hover { opacity: .88; color: #fff; text-decoration: none; }
+
+                /* upload form */
+                .doc-upload-row {
+                    display: flex; align-items: center; gap: 12px;
+                }
+                .doc-who {
+                    font-size: 12px; color: #64748b;
+                    display: flex; align-items: center; gap: 5px; margin-bottom: 10px;
+                }
+                .doc-who strong { color: #1e293b; }
+                .doc-upload-row .custom-file { flex: 1; }
+                .doc-upload-row .custom-file-label { font-size: 12px; height: 36px; line-height: 24px; border-radius: 8px; }
+                .doc-upload-row .custom-file-input { height: 36px; }
+                .doc-upload-btn {
+                    padding: 7px 16px; border-radius: 9px; font-size: 12px; font-weight: 600;
+                    background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff;
+                    border: none; cursor: pointer; white-space: nowrap;
+                    display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+                }
+                .doc-upload-btn:hover { opacity: .9; }
+                .doc-locked-msg {
+                    font-size: 12px; color: #94a3b8;
+                    display: flex; align-items: center; gap: 6px;
+                }
+                .doc-role-only {
+                    font-size: 12px; background: #f0f9ff; color: #0369a1;
+                    border: 1px solid #bae6fd; border-radius: 8px;
+                    padding: 7px 12px; display: flex; align-items: center; gap: 6px;
+                }
+                </style>
+
+                @php
+                $steps = [
+                    [
+                        'key'     => 'first_acceptance',
+                        'label'   => 'First Acceptance Letter',
+                        'icon'    => 'fa-file-check',
+                        'file'    => $firstAcceptance,
+                        'locked'  => false,
+                        'who'     => 'Register',
+                        'roles'   => ['Register','Admin'],
+                        'unlock'  => null,
+                        'ftype'   => 'fa-file-alt',
+                    ],
+                    [
+                        'key'     => 'payment_file',
+                        'label'   => 'Payment Confirmation',
+                        'icon'    => 'fa-money-bill-wave',
+                        'file'    => $paymentFile,
+                        'locked'  => !$firstAcceptance,
+                        'who'     => 'Sales',
+                        'roles'   => ['Sales','Admin'],
+                        'unlock'  => 'Upload First Acceptance Letter to unlock',
+                        'ftype'   => 'fa-file-invoice-dollar',
+                    ],
+                    [
+                        'key'     => 'final_acceptance',
+                        'label'   => 'Final Acceptance Letter',
+                        'icon'    => 'fa-file-contract',
+                        'file'    => $finalAcceptance,
+                        'locked'  => !$paymentFile,
+                        'who'     => 'Register',
+                        'roles'   => ['Register','Admin'],
+                        'unlock'  => 'Upload Payment Confirmation to unlock',
+                        'ftype'   => 'fa-file-contract',
+                    ],
+                    [
+                        'key'     => 'awaiting_student_card',
+                        'label'   => 'Student Card',
+                        'icon'    => 'fa-id-card',
+                        'file'    => $awaitingStudentCard,
+                        'locked'  => !$finalAcceptance,
+                        'who'     => 'Sales',
+                        'roles'   => ['Sales','Admin'],
+                        'unlock'  => 'Upload Final Acceptance Letter to unlock',
+                        'ftype'   => 'fa-id-card',
+                    ],
+                ];
+                @endphp
+
+                <div class="doc-timeline px-3 py-2">
+                @foreach($steps as $i => $step)
+                    @php
+                        $state = $step['file'] ? 'done' : ($step['locked'] ? 'lock' : 'next');
+                        $canUpload = in_array(auth()->user()->role, $step['roles']);
+                        $num = $i + 1;
+                    @endphp
+                    <div class="doc-step">
+                        {{-- Step number bubble --}}
+                        <div class="doc-step-num">
+                            <div class="doc-bubble {{ $state }}">
+                                @if($state === 'done')
+                                    <i class="fas fa-check"></i>
+                                @elseif($state === 'lock')
+                                    <i class="fas fa-lock"></i>
+                                @else
+                                    {{ $num }}
+                                @endif
                             </div>
                         </div>
-                        
-                        <!-- Payment File -->
-                        <div class="col-lg-6 mb-4">
-                            <div class="card h-100 {{ $paymentFile ? 'border-success' : ($firstAcceptance ? 'border-warning' : 'border-secondary') }}">
-                                <div class="card-header py-2 d-flex justify-content-between align-items-center {{ $paymentFile ? 'bg-success text-white' : ($firstAcceptance ? 'bg-warning text-dark' : 'bg-secondary text-white') }}">
-                                    <h6 class="m-0 font-weight-bold">
-                                        <i class="fas {{ $paymentFile ? 'fa-check-circle' : ($firstAcceptance ? 'fa-exclamation-circle' : 'fa-lock') }} mr-1"></i>
-                                        Payment Confirmation
-                                    </h6>
-                                    @if($paymentFile)
-                                    <span class="badge badge-light">Uploaded by 
-                                         {{ $paymentFile->uploader ? $paymentFile->uploader->name : 'Unknown' }}</span>
-                                    @else
-                                    <span class="badge badge-light {{ $firstAcceptance ? 'text-warning' : 'text-secondary' }}">
-                                        {{ $firstAcceptance ? 'Missing' : 'Locked' }}
-                                    </span>
-                                    @endif
-                                </div>
-                                <div class="card-body">
-                                    @if($paymentFile)
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <div>
-                                                <i class="fas {{  ($paymentFile->mime_type ?? 'application/pdf') }} fa-2x mr-2 text-primary"></i>
-                                            </div>
-                                            <div class="text-right">
-                                                <small class="text-muted d-block">Uploaded {{ $paymentFile->created_at->format('M d, Y') }}</small>
-                                                <small class="text-muted d-block">{{   ($paymentFile->file_size ?? 0) }}</small>
-                                            </div>
-                                        </div>
-                                        <h5 class="mb-1 text-truncate">{{ $paymentFile->original_filename }}</h5>
-                                        <div class="btn-group btn-block mt-3">
-                                            <a href="" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-download mr-1"></i> Download
-                                            </a>
-                                     
-                                        </div>
-                                    @else
-                                        <div class="text-center py-3">
-                                            <i class="fas fa-file-invoice-dollar fa-3x {{ $firstAcceptance ? 'text-warning' : 'text-secondary' }} mb-3"></i>
-                                            <p class="mb-2">
-                                                @if($firstAcceptance)
-                                                    No payment confirmation uploaded yet.
-                                                @else
-                                                    Upload First Acceptance Letter to unlock
-                                                @endif
-                                            </p>
-                                            @if($firstAcceptance)
-                                            <form action="{{ route('admin.applications.upload-file', $application) }}" method="POST" enctype="multipart/form-data" class="mt-3">
-                                                @csrf
-                                                <input type="hidden" name="file_type" value="payment_file">
-                                                <div class="custom-file mb-2">
-                                                    <input type="file" class="custom-file-input" id="payment_file" name="file">
-                                                    <label class="custom-file-label text-left" for="payment_file">Choose file</label>
-                                                </div>
-                                                <button type="submit" class="btn btn-warning btn-block">
-                                                    <i class="fas fa-upload mr-1"></i> Upload Now
-                                                </button>
-                                            </form>
-                                            @else
-                                            <button class="btn btn-secondary btn-block" disabled>
-                                                <i class="fas fa-lock mr-1"></i> Locked
-                                            </button>
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
+
+                        {{-- Step card --}}
+                        <div class="doc-step-body {{ $state }}">
+                            {{-- Header --}}
+                            <div class="doc-step-hd {{ $state }}">
+                                <h6 class="doc-step-title {{ $state }}">
+                                    <i class="fas {{ $step['icon'] }}"></i>
+                                    {{ $step['label'] }}
+                                </h6>
+                                @if($state === 'done')
+                                    <span class="doc-badge done"><i class="fas fa-check-circle mr-1"></i>Uploaded</span>
+                                @elseif($state === 'next')
+                                    <span class="doc-badge next"><i class="fas fa-exclamation-circle mr-1"></i>Pending</span>
+                                @else
+                                    <span class="doc-badge lock"><i class="fas fa-lock mr-1"></i>Locked</span>
+                                @endif
                             </div>
-                        </div>
-                        
-                        <!-- Final Acceptance Letter -->
-                        <div class="col-lg-6 mb-4">
-                            <div class="card h-100 {{ $finalAcceptance ? 'border-success' : ($paymentFile ? 'border-warning' : 'border-secondary') }}">
-                                <div class="card-header py-2 d-flex justify-content-between align-items-center {{ $finalAcceptance ? 'bg-success text-white' : ($paymentFile ? 'bg-warning text-dark' : 'bg-secondary text-white') }}">
-                                    <h6 class="m-0 font-weight-bold">
-                                        <i class="fas {{ $finalAcceptance ? 'fa-check-circle' : ($paymentFile ? 'fa-exclamation-circle' : 'fa-lock') }} mr-1"></i>
-                                        Final Acceptance Letter
-                                    </h6>
-                                    @if($finalAcceptance)
-                                    <span class="badge badge-light">Uploaded by 
-                                         {{ $finalAcceptance->uploader ? $finalAcceptance->uploader->name : 'Unknown' }}</span>
-                                    @else
-                                    <span class="badge badge-light {{ $paymentFile ? 'text-warning' : 'text-secondary' }}">
-                                        {{ $paymentFile ? 'Missing' : 'Locked' }}
-                                    </span>
-                                    @endif
-                                </div>
-                                <div class="card-body">
-                                    @if($finalAcceptance)
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <div>
-                                                <i class="fas {{  ($finalAcceptance->mime_type ?? 'application/pdf') }} fa-2x mr-2 text-primary"></i>
-                                            </div>
-                                            <div class="text-right">
-                                                <small class="text-muted d-block">Uploaded {{ $finalAcceptance->created_at->format('M d, Y') }}</small>
-                                                <small class="text-muted d-block">{{   ($finalAcceptance->file_size ?? 0) }}</small>
-                                            </div>
+
+                            {{-- Body --}}
+                            <div class="doc-step-bd">
+                                @if($state === 'done')
+                                    <div class="doc-file-row">
+                                        <div class="doc-file-ico"><i class="fas {{ $step['ftype'] }}"></i></div>
+                                        <div class="doc-file-meta">
+                                            <div class="doc-file-name">{{ $step['file']->original_filename }}</div>
+                                            <div class="doc-file-date"><i class="fas fa-calendar-alt mr-1"></i>{{ $step['file']->created_at->format('d M Y') }}</div>
+                                            <div class="doc-file-by"><i class="fas fa-user mr-1"></i>{{ $step['file']->uploader->name ?? 'Unknown' }}</div>
                                         </div>
-                                        <h5 class="mb-1 text-truncate">{{ $finalAcceptance->original_filename }}</h5>
-                                        <div class="btn-group btn-block mt-3">
-                                            <a href="{{ route('admin.applications.files.download', [$application, $finalAcceptance]) }}" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-download mr-1"></i> Download
-                                            </a>
-                                   
-                                        </div>
-                                    @else
-                                        <div class="text-center py-3"> 
-                                            <i class="fas fa-file-contract fa-3x {{ $paymentFile ? 'text-warning' : 'text-secondary' }} mb-3"></i>
-                                            <p class="mb-2">
-                                                @if($paymentFile)
-                                                    No final acceptance letter uploaded yet.
-                                                @else
-                                                    Upload Payment Confirmation to unlock
-                                                @endif
-                                            </p>
-            
-                                            @if($paymentFile && auth()->user()->role =="Register")
-                                            <form action="{{ route('admin.applications.upload-file', $application) }}" method="POST" enctype="multipart/form-data" class="mt-3">
-                                                @csrf
-                                                <input type="hidden" name="file_type" value="final_acceptance">
-                                                <div class="custom-file mb-2">
-                                                    <input type="file" class="custom-file-input" id="final_acceptance" name="file">
-                                                    <label class="custom-file-label text-left" for="final_acceptance">Choose file</label>
-                                                </div>
-                                                <button type="submit" class="btn btn-warning btn-block">
-                                                    <i class="fas fa-upload mr-1"></i> Upload Now
-                                                </button>
-                                            </form>
-                                            @elseif($paymentFile)
-                                            <b>Only Register Upload this</b>
-                                            @else
-                                            <button class="btn btn-secondary btn-block" disabled>
-                                                <i class="fas fa-lock mr-1"></i> Locked
+                                        @php
+                                            $dlKey = $step['key'] === 'first_acceptance' ? ['application' => $application->id, 'file' => $step['file']->id] : [$application, $step['file']];
+                                        @endphp
+                                        <a href="{{ route('admin.applications.files.download', $step['key'] === 'first_acceptance' ? ['application' => $application->id, 'file' => $step['file']->id] : [$application, $step['file']]) }}"
+                                           class="doc-dl-btn">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </div>
+
+                                @elseif($state === 'lock')
+                                    <div class="doc-locked-msg">
+                                        <i class="fas fa-lock"></i>
+                                        {{ $step['unlock'] }}
+                                    </div>
+
+                                @else
+                                    <div class="doc-who">
+                                        <i class="fas fa-user-tag"></i>
+                                        Waiting for <strong>{{ $step['who'] }}</strong> to upload
+                                    </div>
+                                    @if($canUpload)
+                                    <form action="{{ route('admin.applications.upload-file', $application) }}" method="POST" enctype="multipart/form-data">
+                                        @csrf
+                                        <input type="hidden" name="file_type" value="{{ $step['key'] }}">
+                                        <div class="doc-upload-row">
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="file_{{ $step['key'] }}" name="file">
+                                                <label class="custom-file-label" for="file_{{ $step['key'] }}">Choose file…</label>
+                                            </div>
+                                            <button type="submit" class="doc-upload-btn">
+                                                <i class="fas fa-upload"></i> Upload
                                             </button>
-                                            @endif
                                         </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Awaiting Student Card -->
-                        <div class="col-lg-6 mb-4">
-                            <div class="card h-100 {{ $awaitingStudentCard ? 'border-success' : ($finalAcceptance ? 'border-warning' : 'border-secondary') }}">
-                                <div class="card-header py-2 d-flex justify-content-between align-items-center {{ $awaitingStudentCard ? 'bg-success text-white' : ($finalAcceptance ? 'bg-warning text-dark' : 'bg-secondary text-white') }}">
-                                    <h6 class="m-0 font-weight-bold">
-                                        <i class="fas {{ $awaitingStudentCard ? 'fa-check-circle' : ($finalAcceptance ? 'fa-exclamation-circle' : 'fa-lock') }} mr-1"></i>
-                                        Awaiting Student Card
-                                    </h6>
-                                    @if($awaitingStudentCard)
-                                    <span class="badge badge-light">Uploaded by 
-                                         {{ $awaitingStudentCard->uploader ? $awaitingStudentCard->uploader->name : 'Unknown' }}</span>
+                                    </form>
                                     @else
-                                    <span class="badge badge-light {{ $finalAcceptance ? 'text-warning' : 'text-secondary' }}">
-                                        {{ $finalAcceptance ? 'Missing' : 'Locked' }}
-                                    </span>
+                                    <div class="doc-role-only">
+                                        <i class="fas fa-info-circle"></i>
+                                        Only <strong>&nbsp;{{ $step['who'] }}&nbsp;</strong> can upload this step
+                                    </div>
                                     @endif
-                                </div>
-                                <div class="card-body">
-                                    @if($awaitingStudentCard)
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <div>
-                                                <i class="fas {{  ($awaitingStudentCard->mime_type ?? 'application/pdf') }} fa-2x mr-2 text-primary"></i>
-                                            </div>
-                                            <div class="text-right">
-                                                <small class="text-muted d-block">Uploaded {{ $awaitingStudentCard->created_at->format('M d, Y') }}</small>
-                                                <small class="text-muted d-block">{{   ($awaitingStudentCard->file_size ?? 0) }}</small>
-                                            </div>
-                                        </div>
-                                        <h5 class="mb-1 text-truncate">{{ $awaitingStudentCard->original_filename }}</h5>
-                                        <div class="btn-group btn-block mt-3">
-                                            <a href="{{ route('admin.applications.files.download', [$application, $awaitingStudentCard]) }}" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-download mr-1"></i> Download
-                                            </a>
-                                            
-                                        </div>
-                                    @else
-                                        <div class="text-center py-3">
-                                            <i class="fas fa-id-card fa-3x {{ $finalAcceptance ? 'text-warning' : 'text-secondary' }} mb-3"></i>
-                                            <p class="mb-2">
-                                                @if($finalAcceptance)
-                                                    No student card uploaded yet.
-                                                @else
-                                                    Upload Final Acceptance Letter to unlock
-                                                @endif
-                                            </p>
-                                            @if($finalAcceptance)
-                                            <form action="{{ route('admin.applications.upload-file', $application) }}" method="POST" enctype="multipart/form-data" class="mt-3">
-                                                @csrf
-                                                <input type="hidden" name="file_type" value="awaiting_student_card">
-                                                <div class="custom-file mb-2">
-                                                    <input type="file" class="custom-file-input" id="awaiting_student_card" name="file">
-                                                    <label class="custom-file-label text-left" for="awaiting_student_card">Choose file</label>
-                                                </div>
-                                                <button type="submit" class="btn btn-warning btn-block">
-                                                    <i class="fas fa-upload mr-1"></i> Upload Now
-                                                </button>
-                                            </form>
-                                            @else
-                                            <button class="btn btn-secondary btn-block" disabled>
-                                                <i class="fas fa-lock mr-1"></i> Locked
-                                            </button>
-                                            @endif
-                                        </div>
-                                    @endif
-                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
+                @endforeach
+                </div>
+
                 </div>
             </div>
         </div>
@@ -485,139 +482,97 @@
                 </div>
                 <div class="card-body">
                     @php
-                        // Calculate progress percentage based on status and documents
-                        $progress = 0;
-                        $totalSteps = 6; // Maximum steps in application process
-                        
-                        // Add progress for each completed document
-                        if($firstAcceptance) $progress++;
-                        if($paymentFile) $progress++;
-                        if($finalAcceptance) $progress++;
-                        if($awaitingStudentCard) $progress++;
-                        
-                        // Add progress based on status
-                        if(in_array($application->status, ['Completed', 'Final Acceptance'])) {
-                            $progress = $totalSteps; // Maximum progress
-                        } elseif(in_array($application->status, ['Paid', 'Awaiting Final Acceptance'])) {
-                            $progress = max($progress, 4);
-                        } elseif(in_array($application->status, ['Conditional Acceptance', 'Awaiting Payment'])) {
-                            $progress = max($progress, 3);
-                        } elseif(in_array($application->status, ['Awaiting Conditional Acceptance'])) {
-                            $progress = max($progress, 2);
-                        } elseif(in_array($application->status, ['Awaiting App Fees Payment'])) {
-                            $progress = max($progress, 1);
-                        }
-                        
-                        $progressPercent = min(100, round(($progress / $totalSteps) * 100));
-                        
-                        // Progress color
-                        $progressColor = "danger";
-                        if($progressPercent >= 100) {
-                            $progressColor = "success";
-                        } elseif($progressPercent >= 70) {
-                            $progressColor = "info";
-                        } elseif($progressPercent >= 40) {
-                            $progressColor = "primary";
-                        } elseif($progressPercent >= 20) {
-                            $progressColor = "warning";
-                        }
+                        // Progress is driven ONLY by document uploads
+                        // Step 1 = Application Submitted (always done once application exists)
+                        // Step 2 = First Acceptance uploaded
+                        // Step 3 = Payment Confirmation uploaded
+                        // Step 4 = Final Acceptance uploaded
+                        // Step 5 = Student Card uploaded → Completed
+                        $docProgress = 1; // application submitted is always step 1
+                        if($firstAcceptance)      $docProgress = 2;
+                        if($paymentFile)          $docProgress = 3;
+                        if($finalAcceptance)      $docProgress = 4;
+                        if($awaitingStudentCard)  $docProgress = 5;
+
+                        $totalSteps     = 5;
+                        $progressPercent = min(100, round(($docProgress / $totalSteps) * 100));
+
+                        $progressColor = match(true) {
+                            $progressPercent >= 100 => 'success',
+                            $progressPercent >= 80  => 'info',
+                            $progressPercent >= 60  => 'primary',
+                            $progressPercent >= 40  => 'warning',
+                            default                 => 'danger',
+                        };
+
+                        // Derive current status label from documents only
+                        $pipelineStatus = match($docProgress) {
+                            5 => 'Completed',
+                            4 => 'Final Acceptance',
+                            3 => 'Payment Confirmed',
+                            2 => 'First Acceptance',
+                            default => 'Application Submitted',
+                        };
+
+                        $pipelineSteps = [
+                            ['label' => 'Application Submitted', 'desc' => 'Initial application received',   'icon' => 'fa-file-alt'],
+                            ['label' => 'First Acceptance',      'desc' => 'First acceptance letter uploaded','icon' => 'fa-check-square'],
+                            ['label' => 'Payment Confirmed',     'desc' => 'Payment confirmation uploaded',   'icon' => 'fa-money-bill-wave'],
+                            ['label' => 'Final Acceptance',      'desc' => 'Final acceptance letter uploaded','icon' => 'fa-certificate'],
+                            ['label' => 'Completed',             'desc' => 'Student card uploaded',          'icon' => 'fa-graduation-cap'],
+                        ];
                     @endphp
-                    
-<!-- Progress bar -->
-<h4 class="small font-weight-bold">Overall Progress <span class="float-right">{{ $progressPercent }}%</span></h4>
-<div class="progress mb-4">
-    <div class="progress-bar bg-{{ $progressColor }}" role="progressbar" style="width: {{ $progressPercent }}%" aria-valuenow="{{ $progressPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
-</div>
 
-<!-- Progress steps -->
-<div class="application-progress-steps">
-    <div class="step {{ $progress >= 1 ? 'completed' : ($progress == 0 ? 'active' : '') }}">
-        <div class="step-icon {{ $progress >= 1 ? 'bg-success' : ($progress == 0 ? 'bg-primary' : 'bg-light') }}">
-            <i class="fas fa-file-alt {{ $progress >= 1 || $progress == 0 ? 'text-white' : 'text-gray-500' }}"></i>
-        </div>
-        <div class="step-content">
-            <h6 class="mb-1 {{ $progress >= 1 ? 'text-success' : ($progress == 0 ? 'text-primary' : 'text-muted') }}">Application Submitted</h6>
-            <p class="small text-muted mb-0">Initial application received</p>
-        </div>
-    </div>
-    
-    <div class="step {{ $progress >= 2 ? 'completed' : ($progress == 1 ? 'active' : '') }}">
-        <div class="step-icon {{ $progress >= 2 ? 'bg-success' : ($progress == 1 ? 'bg-primary' : 'bg-light') }}">
-            <i class="fas fa-check-square {{ $progress >= 2 || $progress == 1 ? 'text-white' : 'text-gray-500' }}"></i>
-        </div>
-        <div class="step-content">
-            <h6 class="mb-1 {{ $progress >= 2 ? 'text-success' : ($progress == 1 ? 'text-primary' : 'text-muted') }}">First Acceptance</h6>
-            <p class="small text-muted mb-0">Initial university approval</p>
-        </div>
-    </div>
-    
-    <div class="step {{ $progress >= 3 ? 'completed' : ($progress == 2 ? 'active' : '') }}">
-        <div class="step-icon {{ $progress >= 3 ? 'bg-success' : ($progress == 2 ? 'bg-primary' : 'bg-light') }}">
-            <i class="fas fa-money-bill-wave {{ $progress >= 3 || $progress == 2 ? 'text-white' : 'text-gray-500' }}"></i>
-        </div>
-        <div class="step-content">
-            <h6 class="mb-1 {{ $progress >= 3 ? 'text-success' : ($progress == 2 ? 'text-primary' : 'text-muted') }}">Payment Confirmed</h6>
-            <p class="small text-muted mb-0">Tuition/fees payment received</p>
-        </div>
-    </div>
-    
-    <div class="step {{ $progress >= 4 ? 'completed' : ($progress == 3 ? 'active' : '') }}">
-        <div class="step-icon {{ $progress >= 4 ? 'bg-success' : ($progress == 3 ? 'bg-primary' : 'bg-light') }}">
-            <i class="fas fa-certificate {{ $progress >= 4 || $progress == 3 ? 'text-white' : 'text-gray-500' }}"></i>
-        </div>
-        <div class="step-content">
-            <h6 class="mb-1 {{ $progress >= 4 ? 'text-success' : ($progress == 3 ? 'text-primary' : 'text-muted') }}">Final Acceptance</h6>
-            <p class="small text-muted mb-0">Final university approval</p>
-        </div>
-    </div>
-    
-    <div class="step {{ $progress >= 5 ? 'completed' : ($progress == 4 ? 'active' : '') }}">
-        <div class="step-icon {{ $progress >= 5 ? 'bg-success' : ($progress == 4 ? 'bg-primary' : 'bg-light') }}">
-            <i class="fas fa-id-card {{ $progress >= 5 || $progress == 4 ? 'text-white' : 'text-gray-500' }}"></i>
-        </div>
-        <div class="step-content">
-            <h6 class="mb-1 {{ $progress >= 5 ? 'text-success' : ($progress == 4 ? 'text-primary' : 'text-muted') }}">Student Card</h6>
-            <p class="small text-muted mb-0">Student ID/credentials</p>
-        </div>
-    </div>
-    
-    <div class="step {{ $progress >= 6 ? 'completed' : ($progress == 5 ? 'active' : '') }}">
-        <div class="step-icon {{ $progress >= 6 ? 'bg-success' : ($progress == 5 ? 'bg-primary' : 'bg-light') }}">
-            <i class="fas fa-graduation-cap {{ $progress >= 6 || $progress == 5 ? 'text-white' : 'text-gray-500' }}"></i>
-        </div>
-        <div class="step-content">
-            <h6 class="mb-1 {{ $progress >= 6 ? 'text-success' : ($progress == 5 ? 'text-primary' : 'text-muted') }}">Completed</h6>
-            <p class="small text-muted mb-0">Application process finished</p>
-        </div>
-    </div>
-</div>
-            
-            @if(auth()->user()->role == 'Admin' || auth()->user()->role == 'Register' )
+                    {{-- Current status derived from documents --}}
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="small font-weight-bold text-muted text-uppercase">Pipeline Status</span>
+                        @php
+                            $psColor = match($pipelineStatus) {
+                                'Completed'           => 'success',
+                                'Final Acceptance'    => 'info',
+                                'Payment Confirmed'   => 'primary',
+                                'First Acceptance'    => 'warning',
+                                default               => 'secondary',
+                            };
+                        @endphp
+                        <span class="badge badge-{{ $psColor }} px-2 py-1" style="font-size:11px">
+                            <i class="fas fa-circle mr-1" style="font-size:7px"></i>{{ $pipelineStatus }}
+                        </span>
+                    </div>
 
-            <td class="status-cell">
-                @include('partials.status-badge', ['status' => $application->status])
-                
-                <div class="mt-2">
-                    <form id="status-update-form-{{ $application->id }}"
-                        action="{{ route('admin.applications.update-status', $application) }}"
-                        method="POST">
-                      @csrf
-                      @method('PUT')
-                      <select name="status" class="form-control form-control-sm" 
-                              onchange="this.form.submit()"
-                              data-application-id="{{ $application->id }}">
-                          @foreach(App\Models\AdmissionStage::all() as $stage)
-                              <option value="{{ $stage->id }}" {{ $application->status == $stage->name ? 'selected' : '' }}>
-                                  {{ $stage->name }}
-                              </option>
-                          @endforeach
-                      </select>
-                  </form>
+                    {{-- Progress bar --}}
+                    <h4 class="small font-weight-bold">Overall Progress <span class="float-right">{{ $progressPercent }}%</span></h4>
+                    <div class="progress mb-4" style="height:8px; border-radius:6px">
+                        <div class="progress-bar bg-{{ $progressColor }}" role="progressbar"
+                             style="width:{{ $progressPercent }}%; border-radius:6px"
+                             aria-valuenow="{{ $progressPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    {{-- Pipeline steps --}}
+                    <div class="application-progress-steps">
+                    @foreach($pipelineSteps as $idx => $ps)
+                        @php
+                            $stepNum  = $idx + 1;
+                            $isDone   = $docProgress > $stepNum;
+                            $isActive = $docProgress === $stepNum;
+                        @endphp
+                        <div class="step {{ $isDone ? 'completed' : ($isActive ? 'active' : '') }}">
+                            <div class="step-icon {{ $isDone ? 'bg-success' : ($isActive ? 'bg-primary' : 'bg-light') }}">
+                                <i class="fas {{ $ps['icon'] }} {{ ($isDone || $isActive) ? 'text-white' : 'text-gray-500' }}"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6 class="mb-1 {{ $isDone ? 'text-success' : ($isActive ? 'text-primary' : 'text-muted') }}">
+                                    {{ $ps['label'] }}
+                                    @if($isDone)<i class="fas fa-check-circle ml-1 text-success" style="font-size:11px"></i>@endif
+                                </h6>
+                                <p class="small text-muted mb-0">{{ $ps['desc'] }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                    </div>
+
                 </div>
-            </td>
-
-            @endif
-       
+            </div>
         </div>
     </div>
 </div>

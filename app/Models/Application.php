@@ -110,30 +110,46 @@ public function statusLogs()
         return $stage;
     }
 
+    // Pipeline step statuses (in order)
+    const PIPELINE = [
+        'Application Submitted' => 'Application Submitted',
+        'First Acceptance'      => 'First Acceptance',
+        'Payment Confirmed'     => 'Payment Confirmed',
+        'Final Acceptance'      => 'Final Acceptance',
+        'Student Card'          => 'Student Card',
+        'Completed'             => 'Completed',
+    ];
+
     const STATUSES = [
-        'Pending Review' => 'Pending Review',
-        'Awaiting App Fees Payment' => 'Awaiting App Fees Payment',
-        'Awaiting Conditional Acceptance' => 'Awaiting Conditional Acceptance',
-        'Conditional Acceptance' => 'Conditional Acceptance',
-        'Awaiting Payment' => 'Awaiting Payment',
-        'Paid' => 'Paid',
-        'Awaiting Final Acceptance' => 'Awaiting Final Acceptance',
-        'Final Acceptance' => 'Final Acceptance',
-        'Awaiting Student Card' => 'Awaiting Student Card',
-        'Completed' => 'Completed',
-        'Invalid' => 'Invalid',
-        'Already Registered' => 'Already Registered',
-        'Paid Another' => 'Paid Another',
-        'Refused' => 'Refused',
-        'Awaiting Student' => 'Awaiting Student',
-        'Refund Request (Visa Rejected)' => 'Refund Request (Visa Rejected)',
-        'Refund Request (Other)' => 'Refund Request (Other)',
-        'Refunded' => 'Refunded',
-        'Freeze' => 'Freeze',
-        'Free Scholarship' => 'Free Scholarship',
-        '100% Scholarship' => '100% Scholarship',
-        'Cancelled' => 'Cancelled',
-        'Quota Full' => 'Quota Full',
-        'Student Duplicated' => 'Student Duplicated'
+        // ── Pipeline ──
+        'Application Submitted'               => 'Application Submitted',
+        'First Acceptance'                    => 'First Acceptance',
+        'Payment Confirmed'                   => 'Payment Confirmed',
+        'Final Acceptance'                    => 'Final Acceptance',
+        'Student Card'                        => 'Student Card',
+        'Completed'                           => 'Completed',
+        // ── Other ──
+        'Pending Review'                      => 'Pending Review',
+        'Awaiting App Fees Payment'           => 'Awaiting App Fees Payment',
+        'Awaiting Conditional Acceptance'     => 'Awaiting Conditional Acceptance',
+        'Conditional Acceptance'              => 'Conditional Acceptance',
+        'Awaiting Payment'                    => 'Awaiting Payment',
+        'Paid'                                => 'Paid',
+        'Awaiting Final Acceptance'           => 'Awaiting Final Acceptance',
+        'Awaiting Student Card'               => 'Awaiting Student Card',
+        'Invalid'                             => 'Invalid',
+        'Already Registered'                  => 'Already Registered',
+        'Paid Another'                        => 'Paid Another',
+        'Refused'                             => 'Refused',
+        'Awaiting Student'                    => 'Awaiting Student',
+        'Refund Request (Visa Rejected)'      => 'Refund Request (Visa Rejected)',
+        'Refund Request (Other)'              => 'Refund Request (Other)',
+        'Refunded'                            => 'Refunded',
+        'Freeze'                              => 'Freeze',
+        'Free Scholarship'                    => 'Free Scholarship',
+        '100% Scholarship'                    => '100% Scholarship',
+        'Cancelled'                           => 'Cancelled',
+        'Quota Full'                          => 'Quota Full',
+        'Student Duplicated'                  => 'Student Duplicated',
     ];
 }
