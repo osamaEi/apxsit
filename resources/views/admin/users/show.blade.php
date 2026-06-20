@@ -1,192 +1,315 @@
 @extends('admin.index')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-lg border-0 rounded-lg">
-                <div class="card-header bg-gradient-info text-white d-flex justify-content-between align-items-center">
-                    <h2 class="m-0 font-weight-bold">
-                        <i class="fas fa-user-circle me-2"></i>{{ __('User Profile') }}
-                    </h2>
-                    <a href="{{ route('users.index') }}" class="btn btn-light">
-                        <i class="fas fa-arrow-left me-1"></i>{{ __('Back to List') }}
-                    </a>
+@php
+$roleMap = [
+    'Admin'    => ['bg'=>'#fee2e2','text'=>'#dc2626','icon'=>'fa-crown',         'bar'=>'#dc2626'],
+    'Sales'    => ['bg'=>'#dcfce7','text'=>'#16a34a','icon'=>'fa-chart-line',    'bar'=>'#16a34a'],
+    'Register' => ['bg'=>'#fef9c3','text'=>'#ca8a04','icon'=>'fa-clipboard-list','bar'=>'#ca8a04'],
+    'Employee' => ['bg'=>'#dbeafe','text'=>'#2563eb','icon'=>'fa-user-tie',      'bar'=>'#2563eb'],
+];
+$rc = $roleMap[$user->role] ?? $roleMap['Employee'];
+@endphp
+
+<div class="container-fluid">
+
+    {{-- Breadcrumb --}}
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-user-circle mr-2 text-primary"></i>User Profile
+            </h1>
+            <small class="text-muted">
+                <a href="{{ route('users.index') }}" class="text-muted">Users</a>
+                <i class="fas fa-chevron-right mx-1" style="font-size:10px"></i>
+                {{ $user->name }}
+            </small>
+        </div>
+        <div class="d-flex" style="gap:8px">
+            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm shadow-sm">
+                <i class="fas fa-edit mr-1"></i> Edit
+            </a>
+            <a href="{{ route('users.index') }}" class="btn btn-light btn-sm shadow-sm">
+                <i class="fas fa-arrow-left mr-1"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {{-- Left: Profile card --}}
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="usp-card shadow">
+                {{-- Role color bar --}}
+                <div style="height:5px; background:{{ $rc['bar'] }}; border-radius:14px 14px 0 0"></div>
+
+                <div class="usp-card-body">
+                    {{-- Avatar --}}
+                    <div class="usp-avatar" style="background:{{ $rc['bg'] }}; color:{{ $rc['text'] }}">
+                        {{ strtoupper(substr($user->name,0,1)) }}
+                    </div>
+
+                    <h4 class="usp-name">{{ $user->name }}</h4>
+                    <p class="usp-email">{{ $user->email }}</p>
+
+                    <span class="usp-role-pill" style="background:{{ $rc['bg'] }}; color:{{ $rc['text'] }}">
+                        <i class="fas {{ $rc['icon'] }}"></i> {{ $user->role }}
+                    </span>
+
+                    {{-- Status --}}
+                    <div class="usp-status-row">
+                        @if($user->email_verified_at)
+                            <span class="usp-badge-ok"><i class="fas fa-check-circle mr-1"></i>Verified</span>
+                        @else
+                            <span class="usp-badge-pending"><i class="fas fa-clock mr-1"></i>Pending Verification</span>
+                        @endif
+                    </div>
+
+                    {{-- Meta --}}
+                    <div class="usp-meta">
+                        <div class="usp-meta-row">
+                            <span class="usp-meta-lbl"><i class="fas fa-hashtag"></i> User ID</span>
+                            <span class="usp-meta-val">#{{ $user->id }}</span>
+                        </div>
+                        <div class="usp-meta-row">
+                            <span class="usp-meta-lbl"><i class="fas fa-calendar-plus"></i> Joined</span>
+                            <span class="usp-meta-val">{{ $user->created_at->format('d M Y') }}</span>
+                        </div>
+                        <div class="usp-meta-row">
+                            <span class="usp-meta-lbl"><i class="fas fa-sync-alt"></i> Updated</span>
+                            <span class="usp-meta-val">{{ $user->updated_at->diffForHumans() }}</span>
+                        </div>
+                    </div>
+
+                    {{-- Actions --}}
+                    <div class="usp-actions">
+                        <a href="{{ route('users.edit', $user->id) }}" class="usp-btn usp-btn-edit">
+                            <i class="fas fa-edit mr-1"></i> Edit User
+                        </a>
+                        <form action="{{ route('users.destroy', $user->id) }}" method="POST"
+                              onsubmit="return confirm('Delete {{ addslashes($user->name) }}?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="usp-btn usp-btn-del">
+                                <i class="fas fa-trash mr-1"></i> Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                
-                <div class="card-body p-0">
-                    <div class="row g-0">
-                        <!-- Left side - User Info -->
-                        <div class="col-md-4 border-end">
-                            <div class="d-flex flex-column align-items-center text-center p-5">
-                                <div class="avatar bg-{{ getRoleColor($user->role) }} mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 150px; height: 150px;">
-                                    <span class="text-white font-weight-bold" style="font-size: 4rem;">{{ substr($user->name, 0, 1) }}</span>
-                                </div>
-                                <h3 class="font-weight-bold">{{ $user->name }}</h3>
-                                <span class="badge bg-{{ getRoleColor($user->role) }} px-3 py-2 fs-6 my-2">
-                                    {{ $user->role }}
-                                </span>
-                                <p class="text-muted">{{ $user->email }}</p>
-                                
-                                <div class="mt-4 d-flex gap-2">
-                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary">
-                                        <i class="fas fa-edit me-1"></i>{{ __('Edit') }}
-                                    </a>
-                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" 
-                                                onclick="return confirm('{{ __('Are you sure you want to delete this user?') }}')">
-                                            <i class="fas fa-trash-alt me-1"></i>{{ __('Delete') }}
-                                        </button>
-                                    </form>
+            </div>
+        </div>
+
+        {{-- Right: Details + Timeline --}}
+        <div class="col-xl-8 col-lg-7">
+
+            {{-- Info cards --}}
+            <div class="usp-section-card shadow mb-4">
+                <div class="usp-section-hd">
+                    <i class="fas fa-info-circle mr-2"></i> Account Details
+                </div>
+                <div class="usp-section-bd">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="usp-info-block">
+                                <div class="usp-info-lbl"><i class="fas fa-hashtag mr-1"></i>User ID</div>
+                                <div class="usp-info-val">#{{ $user->id }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="usp-info-block">
+                                <div class="usp-info-lbl"><i class="fas fa-shield-alt mr-1"></i>Role</div>
+                                <div class="usp-info-val">
+                                    <span class="usp-role-pill-sm" style="background:{{ $rc['bg'] }}; color:{{ $rc['text'] }}">
+                                        <i class="fas {{ $rc['icon'] }}"></i> {{ $user->role }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Right side - Detailed Info -->
-                        <div class="col-md-8">
-                            <div class="p-4">
-                                <h3 class="border-bottom pb-3 mb-4">{{ __('User Details') }}</h3>
-                                
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <div class="info-card mb-3 p-3 border rounded bg-light">
-                                            <small class="text-muted d-block">{{ __('User ID') }}</small>
-                                            <div class="fs-5 fw-bold">#{{ $user->id }}</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-card mb-3 p-3 border rounded bg-light">
-                                            <small class="text-muted d-block">{{ __('Date Joined') }}</small>
-                                            <div class="fs-5 fw-bold">{{ $user->created_at->format('F d, Y') }}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <div class="info-card mb-3 p-3 border rounded bg-light">
-                                            <small class="text-muted d-block">{{ __('Email Verified') }}</small>
-                                            <div class="fs-5 fw-bold">
-                                                @if($user->email_verified_at)
-                                                    <span class="text-success">
-                                                        <i class="fas fa-check-circle me-1"></i>
-                                                        {{ $user->email_verified_at->format('F d, Y') }}
-                                                    </span>
-                                                @else
-                                                    <span class="text-danger">
-                                                        <i class="fas fa-times-circle me-1"></i>
-                                                        {{ __('Not Verified') }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="info-card mb-3 p-3 border rounded bg-light">
-                                            <small class="text-muted d-block">{{ __('Last Updated') }}</small>
-                                            <div class="fs-5 fw-bold">{{ $user->updated_at->format('F d, Y') }}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <h3 class="border-bottom pb-3 mb-4 mt-5">{{ __('Activity') }}</h3>
-                                
-                                <div class="timeline">
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker bg-success"></div>
-                                        <div class="timeline-content">
-                                            <h4 class="timeline-title">{{ __('Account Created') }}</h4>
-                                            <p class="timeline-subtitle">{{ $user->created_at->format('F d, Y - h:i A') }}</p>
-                                        </div>
-                                    </div>
-                                    
+                        <div class="col-md-6 mb-3">
+                            <div class="usp-info-block">
+                                <div class="usp-info-lbl"><i class="fas fa-envelope mr-1"></i>Email</div>
+                                <div class="usp-info-val">{{ $user->email }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="usp-info-block">
+                                <div class="usp-info-lbl"><i class="fas fa-check-circle mr-1"></i>Email Verified</div>
+                                <div class="usp-info-val">
                                     @if($user->email_verified_at)
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker bg-primary"></div>
-                                        <div class="timeline-content">
-                                            <h4 class="timeline-title">{{ __('Email Verified') }}</h4>
-                                            <p class="timeline-subtitle">{{ $user->email_verified_at->format('F d, Y - h:i A') }}</p>
-                                        </div>
-                                    </div>
+                                        <span style="color:#16a34a"><i class="fas fa-check-circle mr-1"></i>{{ $user->email_verified_at->format('d M Y') }}</span>
+                                    @else
+                                        <span style="color:#dc2626"><i class="fas fa-times-circle mr-1"></i>Not Verified</span>
                                     @endif
-                                    
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker bg-warning"></div>
-                                        <div class="timeline-content">
-                                            <h4 class="timeline-title">{{ __('Last Profile Update') }}</h4>
-                                            <p class="timeline-subtitle">{{ $user->updated_at->format('F d, Y - h:i A') }}</p>
-                                        </div>
-                                    </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="usp-info-block">
+                                <div class="usp-info-lbl"><i class="fas fa-calendar-alt mr-1"></i>Date Joined</div>
+                                <div class="usp-info-val">{{ $user->created_at->format('d M Y — H:i') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="usp-info-block">
+                                <div class="usp-info-lbl"><i class="fas fa-sync-alt mr-1"></i>Last Updated</div>
+                                <div class="usp-info-val">{{ $user->updated_at->format('d M Y — H:i') }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Timeline --}}
+            <div class="usp-section-card shadow">
+                <div class="usp-section-hd">
+                    <i class="fas fa-history mr-2"></i> Activity Timeline
+                </div>
+                <div class="usp-section-bd">
+                    <div class="usp-timeline">
+                        <div class="usp-tl-item">
+                            <div class="usp-tl-dot" style="background:#16a34a"></div>
+                            <div class="usp-tl-content">
+                                <div class="usp-tl-title">Account Created</div>
+                                <div class="usp-tl-date">{{ $user->created_at->format('d M Y — h:i A') }}</div>
+                            </div>
+                        </div>
+
+                        @if($user->email_verified_at)
+                        <div class="usp-tl-item">
+                            <div class="usp-tl-dot" style="background:#2563eb"></div>
+                            <div class="usp-tl-content">
+                                <div class="usp-tl-title">Email Verified</div>
+                                <div class="usp-tl-date">{{ $user->email_verified_at->format('d M Y — h:i A') }}</div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="usp-tl-item last">
+                            <div class="usp-tl-dot" style="background:#f59e0b"></div>
+                            <div class="usp-tl-content">
+                                <div class="usp-tl-title">Last Profile Update</div>
+                                <div class="usp-tl-date">{{ $user->updated_at->format('d M Y — h:i A') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
 <style>
-.timeline {
-    position: relative;
-    padding-left: 30px;
+/* ── profile card ── */
+.usp-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+}
+.usp-card-body {
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.usp-avatar {
+    width: 90px; height: 90px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 700;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.1);
+}
+.usp-name  { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
+.usp-email { font-size: 13px; color: #94a3b8; margin: 0 0 12px; }
+
+.usp-role-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+}
+.usp-role-pill-sm {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
 }
 
-.timeline-item {
-    position: relative;
-    padding-bottom: 30px;
+.usp-status-row { margin: 12px 0; }
+.usp-badge-ok {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    background: #dcfce7; color: #16a34a;
+}
+.usp-badge-pending {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    background: #fef9c3; color: #ca8a04;
 }
 
-.timeline-item:last-child {
-    padding-bottom: 0;
+.usp-meta {
+    width: 100%; margin: 16px 0;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+    text-align: left;
 }
+.usp-meta-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid #f8fafc; font-size: 13px;
+}
+.usp-meta-lbl { color: #94a3b8; display: flex; align-items: center; gap: 5px; }
+.usp-meta-val { color: #1e293b; font-weight: 600; }
 
-.timeline-marker {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    left: -30px;
-    top: 6px;
+.usp-actions {
+    width: 100%; display: flex; gap: 8px; margin-top: 16px;
 }
+.usp-btn {
+    flex: 1; padding: 8px 0; border-radius: 9px;
+    font-size: 13px; font-weight: 600; border: none;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 5px; text-decoration: none;
+    transition: opacity .15s;
+}
+.usp-btn:hover { opacity: .85; }
+.usp-btn-edit { background: linear-gradient(135deg,#1a6bff,#0a3d99); color: #fff; }
+.usp-btn-del  { background: #fee2e2; color: #dc2626; }
 
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -23px;
-    top: 21px;
-    height: 100%;
-    width: 2px;
-    background-color: #e9ecef;
+/* ── section cards ── */
+.usp-section-card { background: #fff; border-radius: 14px; overflow: hidden; }
+.usp-section-hd {
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #1a6bff, #0a3d99);
+    color: #fff; font-size: 13px; font-weight: 700;
+    letter-spacing: .3px;
 }
+.usp-section-bd { padding: 20px; }
 
-.timeline-item:last-child::before {
-    display: none;
+/* info blocks */
+.usp-info-block {
+    background: #f8fafc; border-radius: 10px;
+    padding: 12px 14px; height: 100%;
 }
+.usp-info-lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.usp-info-val { font-size: 14px; font-weight: 600; color: #1e293b; }
 
-.timeline-title {
-    margin-bottom: 5px;
-    font-size: 1.1rem;
-    font-weight: bold;
+/* timeline */
+.usp-timeline { padding-left: 24px; }
+.usp-tl-item {
+    position: relative; padding-bottom: 24px;
 }
-
-.timeline-subtitle {
-    color: #6c757d;
-    font-size: 0.9rem;
+.usp-tl-item.last { padding-bottom: 0; }
+.usp-tl-item::before {
+    content: ''; position: absolute;
+    left: -17px; top: 18px; bottom: 0;
+    width: 2px; background: #e5e9f2;
 }
+.usp-tl-item.last::before { display: none; }
+.usp-tl-dot {
+    position: absolute; left: -24px; top: 4px;
+    width: 14px; height: 14px; border-radius: 50%;
+    box-shadow: 0 0 0 3px #fff;
+}
+.usp-tl-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 2px; }
+.usp-tl-date  { font-size: 12px; color: #94a3b8; }
 </style>
 
-@php
-function getRoleColor($role) {
-    switch($role) {
-        case 'Admin': return 'danger';
-        case 'Sales': return 'success';
-        case 'Register': return 'warning';
-        default: return 'info';
-    }
-}
-@endphp
 @endsection
