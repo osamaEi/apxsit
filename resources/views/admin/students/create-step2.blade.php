@@ -161,6 +161,19 @@
     </div>
 </div>
 
+<style>
+body.dark-mode .rounded-circle.bg-light {
+    background-color: #1a3050 !important;
+    color: #90a4c8 !important;
+    border-color: rgba(255,255,255,.12) !important;
+}
+body.dark-mode .input-group-text {
+    background-color: #0d1e38 !important;
+    border-color: rgba(255,255,255,.1) !important;
+    color: #90a4c8 !important;
+}
+</style>
+
 <!-- Date Picker Assets -->
 <link rel="stylesheet" href="{{ asset('plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css') }}">
 <script src="{{ asset('plugins/moment/moment.min.js') }}"></script>

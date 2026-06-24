@@ -1976,16 +1976,199 @@ function closeNotification() {
 <!-- Dynamic Background Colors -->
 <style>
     /* Ultra light background colors for status highlighting */
-    .bg-warning-ultra-light {
-        background-color: rgba(255, 193, 7, 0.05);
-    }
-    
-    .bg-success-ultra-light {
-        background-color: rgba(40, 167, 69, 0.05);
-    }
-    
-    .bg-danger-ultra-light {
-        background-color: rgba(220, 53, 69, 0.05);
-    }
+    .bg-warning-ultra-light { background-color: rgba(255, 193, 7, 0.05); }
+    .bg-success-ultra-light { background-color: rgba(40, 167, 69, 0.05); }
+    .bg-danger-ultra-light  { background-color: rgba(220, 53, 69, 0.05); }
+</style>
+
+<!-- ══════════════════════════════════════════
+     DARK MODE OVERRIDES — students/index
+     ══════════════════════════════════════════ -->
+<style>
+/* ── page wrapper ── */
+body.dark-mode .student-dashboard {
+    background-color: #0a1628 !important;
+}
+
+/* ── filter card (card-outline) ── */
+body.dark-mode .filtration-section .card-outline {
+    background: #0f2040 !important;
+    border-color: rgba(255,255,255,.07) !important;
+    box-shadow: 0 0 15px rgba(0,0,0,.3) !important;
+}
+body.dark-mode .filtration-section .card-header {
+    background: #0d1e38 !important;
+    border-color: rgba(255,255,255,.06) !important;
+}
+
+/* ── active filter tags ── */
+body.dark-mode .active-filters {
+    background: #0f2040 !important;
+    border-color: rgba(255,255,255,.06) !important;
+}
+body.dark-mode .filter-tag {
+    background-color: #0d1e38 !important;
+    border-color: rgba(255,255,255,.1) !important;
+    color: #a8b8d0 !important;
+}
+body.dark-mode .filter-badge .badge {
+    background-color: #0d2a4a !important;
+    color: #90c8f0 !important;
+}
+
+/* ── filters panel ── */
+body.dark-mode .filters-panel {
+    background: #0f2040 !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,.4) !important;
+}
+body.dark-mode .filters-header,
+body.dark-mode .filters-footer {
+    background-color: #0d1e38 !important;
+    border-color: rgba(255,255,255,.07) !important;
+}
+body.dark-mode .filters-header h5 { color: #d0d8e8 !important; }
+
+/* ── students table wrapper ── */
+body.dark-mode .students-view {
+    background: #0f2040 !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,.4) !important;
+}
+
+/* ── table head ── */
+body.dark-mode .students-view .table thead th {
+    background-color: #0d1e38 !important;
+    color: #90a4c8 !important;
+    border-bottom: 1px solid rgba(255,255,255,.07) !important;
+}
+
+/* ── table rows ── */
+body.dark-mode .students-view .table td {
+    border-color: rgba(255,255,255,.05) !important;
+    color: #c8d2e6 !important;
+}
+body.dark-mode .student-row:hover {
+    background-color: rgba(26,107,255,.07) !important;
+}
+
+/* status-highlighted rows */
+body.dark-mode .bg-warning-ultra-light { background-color: rgba(255,193,7,.06) !important; }
+body.dark-mode .bg-success-ultra-light { background-color: rgba(40,167,69,.06) !important; }
+body.dark-mode .bg-danger-ultra-light  { background-color: rgba(220,53,69,.06) !important; }
+
+/* ── id badge ── */
+body.dark-mode .id-badge {
+    background-color: #1a3050 !important;
+    color: #90a4c8 !important;
+}
+
+/* ── student name link ── */
+body.dark-mode .student-name { color: #c8d2e6 !important; }
+body.dark-mode .student-name:hover { color: #6ea8fe !important; }
+
+/* ── passport / small text ── */
+body.dark-mode .passport-id    { color: #4a6080 !important; }
+body.dark-mode .study-item     { color: #90a4c8 !important; }
+body.dark-mode .contact-item   { color: #90a4c8 !important; }
+body.dark-mode .last-updated span { color: #3a5070 !important; }
+body.dark-mode .nationality    { color: #c8d2e6 !important; }
+
+/* ── created date ── */
+body.dark-mode .created-date { color: #c8d2e6 !important; }
+body.dark-mode .created-time { color: #4a6080 !important; }
+
+/* ── action icon buttons ── */
+body.dark-mode .btn-icon.btn-light {
+    background-color: #1a3050 !important;
+    border-color: rgba(255,255,255,.08) !important;
+    color: #90a4c8 !important;
+}
+body.dark-mode .btn-icon.btn-light:hover {
+    background-color: #1e3d6a !important;
+    color: #6ea8fe !important;
+}
+
+/* ── status badges ── */
+body.dark-mode .status-badge.badge-primary { background-color: rgba(78,115,223,.2) !important; color: #6ea8fe !important; }
+body.dark-mode .status-badge.badge-info    { background-color: rgba(23,162,184,.2) !important; color: #56d8e4 !important; }
+body.dark-mode .status-badge.badge-warning { background-color: rgba(255,193,7,.2)  !important; color: #f6c23e !important; }
+body.dark-mode .status-badge.badge-success { background-color: rgba(40,167,69,.2)  !important; color: #56d888 !important; }
+body.dark-mode .status-badge.badge-danger  { background-color: rgba(220,53,69,.2)  !important; color: #f87171 !important; }
+body.dark-mode .status-badge.badge-secondary { background-color: rgba(108,117,125,.2) !important; color: #94a3b8 !important; }
+body.dark-mode .status-badge.badge-success-dark { background-color: rgba(40,167,69,.25) !important; color: #4ade80 !important; }
+
+/* ── badge-soft-info (Transfer) ── */
+body.dark-mode .badge-soft-info {
+    background-color: rgba(23,162,184,.15) !important;
+    color: #56d8e4 !important;
+}
+
+/* ── delete modal ── */
+body.dark-mode .delete-modal .student-to-delete {
+    background-color: #0d1e38 !important;
+    color: #c8d2e6 !important;
+}
+body.dark-mode .delete-icon {
+    background-color: rgba(220,53,69,.15) !important;
+    color: #f87171 !important;
+}
+
+/* ── student cards view ── */
+body.dark-mode .student-card {
+    background: #0f2040 !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,.4) !important;
+}
+body.dark-mode .student-card:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,.5) !important;
+}
+body.dark-mode .student-card .card-header {
+    background: #0f2040 !important;
+    border-color: rgba(255,255,255,.06) !important;
+}
+body.dark-mode .student-card .card-body {
+    background: #0f2040 !important;
+}
+body.dark-mode .student-card .card-footer {
+    background-color: #0d1e38 !important;
+    border-color: rgba(255,255,255,.06) !important;
+}
+body.dark-mode .info-label { color: #4a6080 !important; }
+body.dark-mode .info-value { color: #c8d2e6 !important; }
+body.dark-mode .student-card .student-name a { color: #c8d2e6 !important; }
+body.dark-mode .student-card .student-name a:hover { color: #6ea8fe !important; }
+
+/* ── quick summary bar ── */
+body.dark-mode .quick-summary-bar {
+    background: #0f2040 !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,.3) !important;
+}
+body.dark-mode .summary-info { color: #4a6080 !important; }
+
+/* ── success notification ── */
+body.dark-mode .success-notification {
+    background: #0f2040 !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,.5) !important;
+}
+body.dark-mode .notification-content h6 { color: #d0d8e8 !important; }
+body.dark-mode .notification-content p  { color: #4a6080 !important; }
+body.dark-mode .notification-close      { color: #4a6080 !important; }
+
+/* ── empty state ── */
+body.dark-mode .empty-state h4 { color: #c8d2e6 !important; }
+body.dark-mode .empty-state p  { color: #4a6080 !important; }
+
+/* ── pagination ── */
+body.dark-mode .page-item .page-link {
+    background-color: #0f2040 !important;
+    color: #90a4c8 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,.3) !important;
+}
+body.dark-mode .page-item.active .page-link {
+    background-color: #1a6bff !important;
+    color: #fff !important;
+}
+body.dark-mode .page-item.disabled .page-link {
+    background-color: #0a1628 !important;
+    color: #3a5070 !important;
+}
 </style>
 @endsection

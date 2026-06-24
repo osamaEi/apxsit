@@ -335,6 +335,14 @@
                     font-size: 12px; color: #64748b;
                     display: flex; align-items: center; gap: 4px;
                 }
+                /* delete button */
+                .doc-del-btn {
+                    padding: 7px 14px; border-radius: 9px; font-size: 12px; font-weight: 600;
+                    background: linear-gradient(135deg,#ef4444,#b91c1c); color: #fff;
+                    border: none; white-space: nowrap; cursor: pointer; text-decoration: none;
+                    display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+                }
+                .doc-del-btn:hover { opacity: .88; color: #fff; text-decoration: none; }
                 </style>
 
                 @php
@@ -441,6 +449,15 @@
                                            class="doc-dl-btn">
                                             <i class="fas fa-download"></i> Download
                                         </a>
+                                        <form method="POST"
+                                              action="{{ route('admin.applications.files.delete', ['application' => $application->id, 'file' => $step['file']->id]) }}"
+                                              onsubmit="return confirm('Delete this file? This cannot be undone.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="doc-del-btn">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
                                     </div>
 
                                 @elseif($state === 'lock')
@@ -981,7 +998,7 @@ $(document).ready(function() {
 });
 
     // Helper function for file icons
-    function  (mimeType) {
+    function getFileIcon(mimeType) {
         if (mimeType && mimeType.includes('pdf')) {
             return 'fa-file-pdf';
         } else if (mimeType && (mimeType.includes('word') || mimeType.includes('doc'))) {
@@ -1002,7 +1019,7 @@ $(document).ready(function() {
     }
 
     // Helper function for file size formatting
-    function   (sizeInKB) {
+    function formatFileSize(sizeInKB) {
         if (!sizeInKB) return '0 KB';
 
         sizeInKB = parseFloat(sizeInKB);
@@ -1015,6 +1032,7 @@ $(document).ready(function() {
 
     // ── Document upload: select → show name + submit button ──────────
     function docFileSelected(input, key) {
+
         var file = input.files[0];
         if (!file) return;
 
@@ -1043,4 +1061,88 @@ $(document).ready(function() {
         });
     });
 </script>
+
+<style>
+/* ══════════════════════════════════════════
+   DARK MODE — applications/show
+   ══════════════════════════════════════════ */
+
+/* page bg */
+body.dark-mode .container-fluid { background-color: #0a1628; }
+
+/* cards */
+body.dark-mode .card { background-color: #0f2040 !important; border-color: rgba(255,255,255,.06) !important; }
+body.dark-mode .card-header { background-color: #0d1e38 !important; border-color: rgba(255,255,255,.06) !important; }
+
+/* table inside program details */
+body.dark-mode .table { background-color: transparent; color: #c8d2e6 !important; }
+body.dark-mode .table th.bg-light { background-color: #0d1e38 !important; color: #90a4c8 !important; border-color: rgba(255,255,255,.06) !important; }
+body.dark-mode .table td { border-color: rgba(255,255,255,.06) !important; color: #c8d2e6 !important; }
+body.dark-mode .table-bordered { border-color: rgba(255,255,255,.06) !important; }
+
+/* notes box */
+body.dark-mode .border.rounded.p-3.bg-light { background-color: #0d1e38 !important; border-color: rgba(255,255,255,.08) !important; color: #c8d2e6 !important; }
+
+/* doc timeline steps */
+body.dark-mode .doc-step:not(:last-child)::after { background: rgba(255,255,255,.08); }
+body.dark-mode .doc-bubble.lock { background: #1a3050; color: #4a6080; }
+
+body.dark-mode .doc-step-body { background: #0f2040 !important; border-color: rgba(255,255,255,.08) !important; }
+body.dark-mode .doc-step-body.done { border-color: #059669 !important; }
+body.dark-mode .doc-step-body.next { border-color: #d97706 !important; }
+body.dark-mode .doc-step-body.lock { background: #0d1e38 !important; border-color: rgba(255,255,255,.06) !important; }
+
+body.dark-mode .doc-step-hd { border-color: rgba(255,255,255,.06) !important; }
+body.dark-mode .doc-step-hd.done { background: rgba(16,185,129,.08) !important; }
+body.dark-mode .doc-step-hd.next { background: rgba(245,158,11,.08) !important; }
+body.dark-mode .doc-step-hd.lock { background: #0d1e38 !important; }
+
+body.dark-mode .doc-step-title.lock { color: #3a5070 !important; }
+body.dark-mode .doc-badge.lock { background: #1a3050 !important; color: #3a5070 !important; }
+body.dark-mode .doc-badge.next { background: rgba(245,158,11,.15) !important; color: #fbbf24 !important; }
+body.dark-mode .doc-badge.done { background: rgba(16,185,129,.15) !important; color: #34d399 !important; }
+
+/* uploaded file row */
+body.dark-mode .doc-file-ico { background: #0d2a4a !important; color: #6ea8fe !important; }
+body.dark-mode .doc-file-name { color: #c8d2e6 !important; }
+body.dark-mode .doc-file-date,
+body.dark-mode .doc-file-by   { color: #4a6080 !important; }
+
+/* locked + role-only messages */
+body.dark-mode .doc-locked-msg { color: #3a5070 !important; }
+body.dark-mode .doc-role-only  { background: #0d2a4a !important; color: #6ea8fe !important; border-color: #1a4a7a !important; }
+body.dark-mode .doc-who        { color: #4a6080 !important; }
+body.dark-mode .doc-who strong { color: #c8d2e6 !important; }
+
+/* upload file picker button */
+body.dark-mode .doc-file-pick-btn { background: #0d1e38 !important; border-color: rgba(255,255,255,.15) !important; color: #a8b8d0 !important; }
+body.dark-mode .doc-file-pick-btn:hover { background: #1a3050 !important; border-color: rgba(255,255,255,.25) !important; }
+body.dark-mode .doc-file-pick-btn.selected { background: #0d2a4a !important; border-color: #3b82f6 !important; color: #6ea8fe !important; }
+body.dark-mode .doc-uploading-msg { color: #4a6080 !important; }
+
+/* application progress sidebar */
+body.dark-mode .application-progress-steps .step:before { background: rgba(255,255,255,.08); }
+body.dark-mode .application-progress-steps .step .step-icon.bg-light { background-color: #1a3050 !important; }
+body.dark-mode .application-progress-steps .step .step-content h6.text-muted { color: #4a6080 !important; }
+body.dark-mode .application-progress-steps .step .step-content p { color: #4a6080 !important; }
+body.dark-mode .progress { background-color: #0d1e38 !important; }
+body.dark-mode .text-muted { color: #4a6080 !important; }
+
+/* status timeline (history) */
+body.dark-mode .status-timeline:before { background: rgba(255,255,255,.08); }
+body.dark-mode .icon-circle { border: 1px solid rgba(255,255,255,.08); }
+
+/* modals */
+body.dark-mode .modal-content { background-color: #0f2040 !important; border-color: rgba(255,255,255,.08) !important; }
+body.dark-mode .modal-header { border-color: rgba(255,255,255,.08) !important; }
+body.dark-mode .modal-footer { border-color: rgba(255,255,255,.08) !important; }
+body.dark-mode .modal-body .alert-info { background: #0d2a4a !important; color: #90c8f0 !important; border-color: #1a4a7a !important; }
+body.dark-mode .modal-body label { color: #a8b8d0 !important; }
+body.dark-mode .modal-body .card { background: #0d1e38 !important; }
+body.dark-mode .modal-body .card-header.bg-warning { background-color: #92400e !important; }
+body.dark-mode .custom-file-label { background-color: #0d1e38 !important; border-color: rgba(255,255,255,.12) !important; color: #a8b8d0 !important; }
+body.dark-mode .custom-file-label::after { background-color: #1a3050 !important; color: #c8d2e6 !important; border-color: rgba(255,255,255,.12) !important; }
+body.dark-mode #statusNotes { background-color: #0d1e38 !important; border-color: rgba(255,255,255,.12) !important; color: #c8d2e6 !important; }
+</style>
+
 @endsection

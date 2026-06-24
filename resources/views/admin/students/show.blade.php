@@ -2431,6 +2431,94 @@ color: white;}
 }
 </style>
 
+<style>
+/* ══════════════════════════════════════════
+   DARK MODE — students/show
+   ══════════════════════════════════════════ */
+
+/* page wrapper */
+body.dark-mode .student-profile-wrapper { background-color:#0a1628 !important; }
+
+/* status update panel */
+body.dark-mode .status-update-panel { background:#0f2040 !important; box-shadow:0 2px 10px rgba(0,0,0,.4) !important; }
+body.dark-mode .section-title { color:#a8b8d0 !important; }
+body.dark-mode .section-title i { color:#6ea8fe !important; }
+body.dark-mode .status-form { background:#0d1e38 !important; border-color:rgba(255,255,255,.07) !important; }
+
+/* success alert */
+body.dark-mode .success-alert { background-color:rgba(40,167,69,.1) !important; border-color:#28a745 !important; }
+body.dark-mode .success-message { color:#56d888 !important; }
+body.dark-mode .close-alert { color:#56d888 !important; }
+
+/* nav tabs */
+body.dark-mode .content-tabs .nav-tabs { border-color:rgba(255,255,255,.08) !important; }
+body.dark-mode .content-tabs .nav-tabs .nav-link { color:#4a6080 !important; }
+body.dark-mode .content-tabs .nav-tabs .nav-link:hover { color:#6ea8fe !important; }
+body.dark-mode .content-tabs .nav-tabs .nav-link.active { color:#6ea8fe !important; }
+body.dark-mode .content-tabs .nav-tabs .nav-link.active::after { background-color:#1a6bff !important; }
+body.dark-mode .content-tabs .nav-tabs .nav-link:hover::after { background-color:rgba(26,107,255,.3) !important; }
+
+/* info cards */
+body.dark-mode .info-card { background:#0f2040 !important; box-shadow:0 2px 10px rgba(0,0,0,.4) !important; }
+body.dark-mode .info-card .card-header { background:#0d1e38 !important; border-color:rgba(255,255,255,.06) !important; }
+body.dark-mode .info-card .card-header h3 { color:#c8d2e6 !important; }
+body.dark-mode .info-card .card-header h3 i { color:#6ea8fe !important; }
+body.dark-mode .info-label { color:#4a6080 !important; }
+body.dark-mode .info-value { color:#c8d2e6 !important; }
+body.dark-mode .info-value.highlight { color:#6ea8fe !important; }
+
+/* additional documents heading */
+body.dark-mode .additional-documents h5 { color:#a8b8d0 !important; }
+
+/* documents grid */
+body.dark-mode .document-card { background:#0f2040 !important; box-shadow:0 2px 8px rgba(0,0,0,.4) !important; }
+body.dark-mode .document-card:hover { box-shadow:0 4px 12px rgba(0,0,0,.5) !important; }
+body.dark-mode .document-card.missing { border-left-color:#f6c23e !important; }
+body.dark-mode .document-icon { background:#0d1e38 !important; color:#4a6080 !important; }
+body.dark-mode .document-details h4 { color:#c8d2e6 !important; }
+body.dark-mode .document-description { color:#4a6080 !important; }
+body.dark-mode .missing-label { color:#f6c23e !important; }
+body.dark-mode .optional-label { color:#4a6080 !important; }
+
+/* timeline */
+body.dark-mode .timeline::before { background-color:rgba(255,255,255,.08) !important; }
+body.dark-mode .timeline-content { background:#0f2040 !important; box-shadow:0 2px 8px rgba(0,0,0,.4) !important; }
+body.dark-mode .timeline-time { color:#4a6080 !important; }
+body.dark-mode .timeline-title { color:#c8d2e6 !important; }
+body.dark-mode .timeline-body { color:#90a4c8 !important; }
+body.dark-mode .timeline-tag { background:#0d1e38 !important; color:#4a6080 !important; }
+
+/* applications tab table */
+body.dark-mode .tab-pane#application .card { background:#0f2040 !important; border-color:rgba(255,255,255,.06) !important; }
+body.dark-mode .tab-pane#application .card-header { background:#0d1e38 !important; border-color:rgba(255,255,255,.06) !important; }
+body.dark-mode .tab-pane#application .table thead th { background:#0d1e38 !important; color:#90a4c8 !important; border-color:rgba(255,255,255,.06) !important; }
+body.dark-mode .tab-pane#application .table td { color:#c8d2e6 !important; border-color:rgba(255,255,255,.05) !important; }
+body.dark-mode .tab-pane#application .table-hover tbody tr:hover { background:rgba(26,107,255,.07) !important; }
+body.dark-mode .tab-pane#application .alert-info { background:#0d2a4a !important; color:#90c8f0 !important; border-color:#1a4a7a !important; }
+
+/* footer */
+body.dark-mode .profile-footer { background:#0f2040 !important; border-color:rgba(255,255,255,.07) !important; }
+
+/* delete modal */
+body.dark-mode .student-to-delete { background:#0d1e38 !important; color:#c8d2e6 !important; }
+body.dark-mode .student-to-delete .text-muted { color:#4a6080 !important; }
+body.dark-mode .delete-icon { background:rgba(220,53,69,.15) !important; color:#f87171 !important; }
+
+/* document checklist */
+body.dark-mode .document-checklist { background:#0f2040 !important; box-shadow:0 4px 15px rgba(0,0,0,.4) !important; }
+body.dark-mode .checklist-title { color:#c8d2e6 !important; border-color:rgba(255,255,255,.07) !important; }
+body.dark-mode .checklist-item { border-color:rgba(255,255,255,.05) !important; }
+body.dark-mode .check-label { color:#c8d2e6 !important; }
+body.dark-mode .checklist-summary { border-color:rgba(255,255,255,.07) !important; }
+body.dark-mode .progress { background:#0d1e38 !important; }
+body.dark-mode .checklist-item.completed .check-status { background:rgba(40,167,69,.15) !important; color:#56d888 !important; }
+body.dark-mode .checklist-item.optional .check-status { background:rgba(108,117,125,.15) !important; color:#94a3b8 !important; }
+
+/* upload/delete doc modals */
+body.dark-mode #uploadDocumentModal .modal-body label { color:#a8b8d0 !important; }
+body.dark-mode #uploadDocumentModal .form-control-file { color:#c8d2e6 !important; }
+</style>
+
 <script>
 $(function() {
     // Document Checklist Toggle

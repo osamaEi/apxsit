@@ -120,6 +120,14 @@
         </div>
     </div>
 </div>
+
+<style>
+body.dark-mode .rounded-circle.bg-light {
+    background-color: #1a3050 !important;
+    color: #90a4c8 !important;
+    border-color: rgba(255,255,255,.12) !important;
+}
+</style>
 @endsection
 
 @section('styles')

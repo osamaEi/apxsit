@@ -201,9 +201,32 @@
                             padding: 0.375rem 0.75rem;
                             border: 1px solid #ced4da;
                         }
-                        
+
                         .is-invalid + .select2-container--default .select2-selection--single {
                             border-color: #dc3545;
+                        }
+
+                        /* ── dark mode ── */
+                        body.dark-mode .form-section {
+                            background-color: #0d1e38 !important;
+                        }
+                        body.dark-mode .section-title {
+                            color: #90a4c8 !important;
+                            border-color: rgba(255,255,255,.08) !important;
+                        }
+                        body.dark-mode .form-navigation {
+                            border-color: rgba(255,255,255,.08) !important;
+                        }
+                        /* inactive step bubbles (bg-light text-dark) */
+                        body.dark-mode .rounded-circle.bg-light {
+                            background-color: #1a3050 !important;
+                            color: #90a4c8 !important;
+                            border-color: rgba(255,255,255,.12) !important;
+                        }
+                        body.dark-mode .input-group-text {
+                            background-color: #0d1e38 !important;
+                            border-color: rgba(255,255,255,.1) !important;
+                            color: #90a4c8 !important;
                         }
                     </style>
                     
