@@ -182,12 +182,9 @@ body.dark-mode .input-group-text {
 <!-- Initialize Date Pickers -->
 <script>
 $(function() {
-    $('#birthdate, #issuedate, #expirydate').datetimepicker({
-        format: 'L',
-        icons: {
-            time: 'far fa-clock'
-        }
-    });
+    $('#birthdate').datetimepicker({ format: 'L', icons: { time: 'far fa-clock' } });
+    $('#issuedate').datetimepicker({ format: 'L', icons: { time: 'far fa-clock' } });
+    $('#expirydate').datetimepicker({ format: 'L', icons: { time: 'far fa-clock' } });
 });
 </script>
 @endsection

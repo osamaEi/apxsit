@@ -438,7 +438,7 @@ class StudentController extends Controller
     public function storeStep4(Request $request)
     {
         $validated = $request->validate([
-            'applying_degree_id' => 'required|exists:programs,id',
+            'applying_degree_id' => 'required|exists:degrees,id',
             'high_school_name' => 'required|string|max:255',
             'high_school_country_id' => 'required|exists:countries,id',
             'gpa' => 'required|string|max:255',
@@ -446,7 +446,7 @@ class StudentController extends Controller
 
         // Store in session
         $request->session()->put('student_data.education', $validated);
-        
+
         return redirect()->route('admin.students.create.step5');
     }
 
@@ -644,11 +644,11 @@ class StudentController extends Controller
             'emergency_phone' => 'nullable|string|max:255',
            
             // Education Information
-            'applying_degree_id' => 'required|exists:programs,id',
+            'applying_degree_id' => 'required|exists:degrees,id',
             'high_school_name' => 'required|string|max:255',
             'high_school_country_id' => 'required|exists:countries,id',
             'gpa' => 'required|string|max:255',
-           
+
             // Documents
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'passport' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120',
