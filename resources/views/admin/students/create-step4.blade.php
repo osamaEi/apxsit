@@ -66,7 +66,7 @@
                                                     <option value="">Please Select</option>
                                                     @foreach($degrees as $degree)
                                                     <option value="{{ $degree->id }}" {{ old('applying_degree_id', session('student_data.education.applying_degree_id')) == $degree->id ? 'selected' : '' }}>
-                                                        {{ $degree->degree }} — {{ $degree->department }}
+                                                        {{ $degree->name }}
                                                     </option>
                                                     @endforeach
                                                 </select>
