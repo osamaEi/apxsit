@@ -427,8 +427,8 @@ class StudentController extends Controller
         }
         
         $countries = Country::orderBy('name')->get();
-        $degrees = Degree::all();
-        
+        $degrees = Program::orderBy('degree')->orderBy('department')->get();
+
         return view('admin.students.create-step4', compact('countries', 'degrees'));
     }
 
@@ -438,7 +438,7 @@ class StudentController extends Controller
     public function storeStep4(Request $request)
     {
         $validated = $request->validate([
-            'applying_degree_id' => 'required|exists:degrees,id',
+            'applying_degree_id' => 'required|exists:programs,id',
             'high_school_name' => 'required|string|max:255',
             'high_school_country_id' => 'required|exists:countries,id',
             'gpa' => 'required|string|max:255',
@@ -644,7 +644,7 @@ class StudentController extends Controller
             'emergency_phone' => 'nullable|string|max:255',
            
             // Education Information
-            'applying_degree_id' => 'required|exists:degrees,id',
+            'applying_degree_id' => 'required|exists:programs,id',
             'high_school_name' => 'required|string|max:255',
             'high_school_country_id' => 'required|exists:countries,id',
             'gpa' => 'required|string|max:255',
