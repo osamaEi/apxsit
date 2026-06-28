@@ -89,9 +89,9 @@
                   // Truncate message if it's too long (40 chars)
                   $truncatedMessage = strlen($message) > 40 ? substr($message, 0, 37) . '...' : $message;
               @endphp
-              <a href="{{ route('admin.students.show', $data['student_id'] ?? '#') }}" 
-                 class="dropdown-item" 
-                 title="{{ $message }}">  <!-- Full message in tooltip -->
+              <a href="{{ isset($data['application_id']) ? route('admin.applications.show', $data['application_id']) : (isset($data['student_id']) ? route('admin.students.show', $data['student_id']) : '#') }}"
+                 class="dropdown-item"
+                 title="{{ $message }}">
                   <i class="fas fa-file-alt mr-2"></i> 
                   <div class="d-flex justify-content-between w-100">
                       <span class="text-truncate" style="max-width: 180px;">{{ $truncatedMessage }}</span>

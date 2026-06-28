@@ -224,6 +224,25 @@ Route::prefix('student')->middleware('auth.student')->group(function() {
     // Application management
     Route::post('/applications/store', [StudentDashboardController::class, 'storeApplication'])->name('student.applications.store');
     Route::get('/applications/{application}', [StudentDashboardController::class, 'showApplication'])->name('student.applications.show');
+
+    // Programs API (for dynamic dropdowns in application modal)
+    Route::get('/programs/by-university/{universityId}', function ($universityId) {
+        $base = \App\Models\Program::where('university_id', $universityId);
+        return response()->json([
+            'languages'   => $base->clone()->distinct()->orderBy('language')->pluck('language'),
+            'departments' => $base->clone()->distinct()->orderBy('department')->pluck('department'),
+            'degrees'     => $base->clone()->distinct()->orderBy('degree')->pluck('degree'),
+        ]);
+    })->name('student.programs.by-university');
+    Route::get('/programs/departments-by-language/{universityId}/{language}', function ($universityId, $language) {
+        $departments = \App\Models\Program::where('university_id', $universityId)
+            ->where('language', $language)
+            ->distinct()->orderBy('department')->pluck('department');
+        $degrees = \App\Models\Program::where('university_id', $universityId)
+            ->where('language', $language)
+            ->distinct()->orderBy('degree')->pluck('degree');
+        return response()->json(['departments' => $departments, 'degrees' => $degrees]);
+    })->name('student.programs.departments-by-language');
     
     // Notification routes
     Route::get('/notifications', [StudentDashboardController::class, 'notifications'])->name('student.notifications');

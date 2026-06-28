@@ -696,7 +696,7 @@ select.sp-form-ctrl option{background:var(--sel-opt);color:var(--form-c)}
                 <div id="app-alert" class="sp-alert"></div>
                 <div class="sp-form-group">
                     <label class="sp-form-label">University *</label>
-                    <select name="university_id" class="sp-form-ctrl" required>
+                    <select name="university_id" id="app-university" class="sp-form-ctrl" required>
                         <option value="">— Select university —</option>
                         @foreach($universities as $u)
                         <option value="{{ $u->id }}">{{ $u->name }}</option>
@@ -704,31 +704,31 @@ select.sp-form-ctrl option{background:var(--sel-opt);color:var(--form-c)}
                     </select>
                 </div>
                 <div class="sp-form-group">
+                    <label class="sp-form-label">Language *</label>
+                    <select name="language" id="app-language" class="sp-form-ctrl" required disabled>
+                        <option value="">— Select university first —</option>
+                    </select>
+                </div>
+                <div class="sp-form-group">
                     <label class="sp-form-label">Department *</label>
-                    <input type="text" name="department" class="sp-form-ctrl" placeholder="e.g. Computer Science" required>
+                    <select name="department" id="app-department" class="sp-form-ctrl" required disabled>
+                        <option value="">— Select language first —</option>
+                    </select>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                     <div class="sp-form-group">
                         <label class="sp-form-label">Degree *</label>
-                        <select name="degree" class="sp-form-ctrl" required>
-                            <option value="">— Select —</option>
-                            <option>Bachelor</option><option>Master</option><option>PhD</option><option>Associate</option>
+                        <select name="degree" id="app-degree" class="sp-form-ctrl" required disabled>
+                            <option value="">— Select university first —</option>
                         </select>
                     </div>
                     <div class="sp-form-group">
-                        <label class="sp-form-label">Language *</label>
-                        <select name="language" class="sp-form-ctrl" required>
+                        <label class="sp-form-label">Semester *</label>
+                        <select name="semester" class="sp-form-ctrl" required>
                             <option value="">— Select —</option>
-                            <option>English</option><option>Turkish</option><option>Arabic</option><option>French</option><option>German</option>
+                            <option>Fall</option><option>Spring</option><option>Summer</option>
                         </select>
                     </div>
-                </div>
-                <div class="sp-form-group">
-                    <label class="sp-form-label">Semester *</label>
-                    <select name="semester" class="sp-form-ctrl" required>
-                        <option value="">— Select —</option>
-                        <option>Fall</option><option>Spring</option><option>Summer</option>
-                    </select>
                 </div>
                 <div class="sp-form-group">
                     <label class="sp-form-label">Notes (optional)</label>
@@ -866,6 +866,79 @@ select.sp-form-ctrl option{background:var(--sel-opt);color:var(--form-c)}
             card.classList.remove('selected');
         }
     };
+
+    /* ── Application modal: dynamic dropdowns ── */
+    (function () {
+        var BASE     = '{{ url("student/programs/by-university") }}';
+        var BASE_DEP = '{{ url("student/programs/departments-by-language") }}';
+
+        function fill(sel, items, placeholder) {
+            sel.innerHTML = '<option value="">' + placeholder + '</option>';
+            items.forEach(function (v) {
+                var o = document.createElement('option');
+                o.value = v; o.textContent = v;
+                sel.appendChild(o);
+            });
+            sel.disabled = items.length === 0;
+        }
+
+        function reset(sel, placeholder) {
+            sel.innerHTML = '<option value="">' + placeholder + '</option>';
+            sel.disabled = true;
+        }
+
+        var uniSel  = document.getElementById('app-university');
+        var langSel = document.getElementById('app-language');
+        var deptSel = document.getElementById('app-department');
+        var degSel  = document.getElementById('app-degree');
+
+        uniSel.addEventListener('change', function () {
+            var id = this.value;
+            reset(langSel, '— Loading… —');
+            reset(deptSel, '— Select language first —');
+            reset(degSel,  '— Loading… —');
+            if (!id) {
+                reset(langSel, '— Select university first —');
+                reset(degSel,  '— Select university first —');
+                return;
+            }
+            fetch(BASE + '/' + id)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    fill(langSel, data.languages, '— Select language —');
+                    fill(degSel,  data.degrees,   '— Select degree —');
+                    reset(deptSel, '— Select language first —');
+                });
+        });
+
+        langSel.addEventListener('change', function () {
+            var uniId = uniSel.value;
+            var lang  = this.value;
+            reset(deptSel, '— Loading… —');
+            reset(degSel,  '— Loading… —');
+            if (!uniId || !lang) {
+                reset(deptSel, '— Select language first —');
+                reset(degSel,  '— Select university first —');
+                return;
+            }
+            fetch(BASE_DEP + '/' + uniId + '/' + encodeURIComponent(lang))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    fill(deptSel, data.departments, '— Select department —');
+                    fill(degSel,  data.degrees,     '— Select degree —');
+                });
+        });
+
+        // Reset dropdowns when modal closes
+        document.getElementById('modal-app').addEventListener('click', function (e) {
+            if (e.target === this) {
+                uniSel.value = '';
+                reset(langSel, '— Select university first —');
+                reset(deptSel, '— Select language first —');
+                reset(degSel,  '— Select university first —');
+            }
+        });
+    })();
 
     /* ── FAB / floating chat ── */
     window.spFabClick = function(){
