@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout *)",
+      "PowerShell(php artisan view:clear)",
+      "PowerShell(php artisan route:clear)"
+    ]
+  }
+}

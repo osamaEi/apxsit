@@ -383,7 +383,25 @@
                                     <td style="white-space:nowrap">{{ $application->department }}</td>
                                     <td><span class="app-pill app-pill-green">{{ $application->degree }}</span></td>
                                     <td>{{ $application->language }}</td>
-                                    <td>@include('partials.status-badge', ['status' => $application->status])</td>
+                                    <td class="status-cell" data-application-id="{{ $application->id }}">
+                                        <div class="dropdown status-inline-dropdown">
+                                            <a href="javascript:void(0);" class="status-badge-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Click to change status">
+                                                <span class="status-badge-wrap">@include('partials.status-badge', ['status' => $application->status])</span>
+                                                <i class="fas fa-caret-down ml-1 app-muted"></i>
+                                            </a>
+                                            <div class="dropdown-menu shadow status-menu" style="max-height:320px; overflow-y:auto;">
+                                                <h6 class="dropdown-header">Change Status</h6>
+                                                @foreach(App\Models\Application::STATUSES as $statusKey => $statusValue)
+                                                    <a class="dropdown-item status-change-inline {{ $statusValue == $application->status ? 'active' : '' }}"
+                                                       href="javascript:void(0);"
+                                                       data-status="{{ $statusValue }}"
+                                                       data-url="{{ route('admin.applications.update-status', $application) }}">
+                                                        <i class="fas fa-circle mr-2 fa-sm text-gray-400"></i>{{ $statusValue }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td style="white-space:nowrap">{{ $application->created_at->format('Y-m-d') }}</td>
                                     <td style="white-space:nowrap">{{ $application->creator->name ?? '—' }}</td>
                                     <td>
@@ -449,6 +467,21 @@
     #applications-table .badge {
         font-size: 90%;
     }
+
+    /* Inline status change */
+    .status-badge-toggle { text-decoration: none; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; }
+    .status-badge-toggle:hover .badge { filter: brightness(0.95); box-shadow: 0 0 0 2px rgba(78,115,223,.25); }
+    .status-inline-dropdown .status-menu .dropdown-item.active { background-color: #4e73df; color: #fff; }
+    .status-inline-dropdown .status-menu .dropdown-item.active i { color: #fff !important; }
+
+    /* Lightweight toast */
+    .inline-status-toast {
+        display: none; position: fixed; bottom: 24px; right: 24px; z-index: 20000;
+        padding: 12px 18px; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 600;
+        box-shadow: 0 6px 20px rgba(0,0,0,.18); max-width: 340px;
+    }
+    .inline-status-toast.toast-success { background: linear-gradient(135deg,#1cc88a,#13855c); }
+    .inline-status-toast.toast-error   { background: linear-gradient(135deg,#e74a3b,#a52a1e); }
     
     .select2-container--bootstrap4 .select2-selection--multiple .select2-selection__choice {
         background-color: #4e73df;
@@ -468,13 +501,65 @@
     }
 </style>
 <script>
-$(function() {
-    // Student select2
-    $('#studentSelect').select2({
-        theme: 'bootstrap4',
-        width: '100%',
-        placeholder: 'All Students',
-        allowClear: true
+// jQuery/select2 load in the layout footer, AFTER this content block.
+// Defer wiring until the page has fully loaded so `$` (and its plugins) exist.
+window.addEventListener('load', function () {
+    // Student select2 (guarded — plugin may not be present on every build)
+    if ($.fn.select2) {
+        $('#studentSelect').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'All Students',
+            allowClear: true
+        });
+    }
+
+    // ── Inline status change from the list ──────────────────────────
+    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+    function showToast(message, isError) {
+        let $toast = $('#inlineStatusToast');
+        if (!$toast.length) {
+            $toast = $('<div id="inlineStatusToast" class="inline-status-toast"></div>').appendTo('body');
+        }
+        $toast.text(message)
+              .removeClass('toast-error toast-success')
+              .addClass(isError ? 'toast-error' : 'toast-success')
+              .stop(true, true).fadeIn(150);
+        clearTimeout($toast.data('hideTimer'));
+        $toast.data('hideTimer', setTimeout(function() { $toast.fadeOut(300); }, 2500));
+    }
+
+    $(document).on('click', '.status-change-inline', function() {
+        const $item    = $(this);
+        const newStatus = $item.data('status');
+        const url       = $item.data('url');
+        const $cell     = $item.closest('.status-cell');
+
+        if ($item.hasClass('active')) return; // no change
+
+        $.ajax({
+            url: url,
+            type: 'PATCH',
+            data: { status: newStatus, _token: csrfToken },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                if (response && response.success) {
+                    // Swap the badge in place (pill-style, matches the shared partial)
+                    $cell.find('.status-badge-wrap').html(response.list_badge || response.status_badge);
+                    // Update which item is marked active
+                    $cell.find('.status-change-inline').removeClass('active');
+                    $item.addClass('active');
+                    showToast(response.message || 'Status updated', false);
+                } else {
+                    showToast('Failed to update status', true);
+                }
+            },
+            error: function(xhr) {
+                const msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Failed to update status';
+                showToast(msg, true);
+            }
+        });
     });
 });
 </script>

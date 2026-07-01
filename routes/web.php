@@ -160,8 +160,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('students', [StudentController::class, 'index'])->name('students.index');
     Route::get('students/pending-documents', [StudentController::class, 'pendingDocuments'])->name('students.pending-documents');
     Route::resource('applications', ApplicationController::class);
-    Route::put('/applications/{application}/status', [ApplicationController::class ,'updateStatus'])
-    ->name('applications.update-status'); 
+    Route::match(['put', 'patch'], '/applications/{application}/status', [ApplicationController::class ,'updateStatus'])
+    ->name('applications.update-status');
+    Route::match(['put', 'patch'], '/applications/{application}/code', [ApplicationController::class, 'updateCode'])
+    ->name('applications.update-code');
     // Student creation steps
     Route::get('students/create/step1', [StudentController::class, 'createStep1'])->name('students.create.step1');
     Route::post('students/create/step1', [StudentController::class, 'storeStep1'])->name('students.store.step1');

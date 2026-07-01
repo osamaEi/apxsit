@@ -11,6 +11,7 @@ use App\Models\Application;
 use App\Models\Notification;
 use App\Models\NotificationSetting;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\ApplicationFile;
 use App\Models\ApplicationFiles;
 use Barryvdh\DomPDF\Facade\PDF; 
@@ -713,54 +714,55 @@ class ApplicationController extends Controller
  */
 public function updateStatus(Request $request, Application $application)
 {
-    $request->validate([
-        'status' => 'required|exists:admission_stages,id'
+    Log::info('updateStatus called', [
+        'application_id' => $application->id,
+        'status'         => $request->input('status'),
+        'method'         => $request->method(),
+        'ajax'           => $request->ajax(),
     ]);
-   
+
+    $request->validate([
+        'status' => ['required', Rule::in(array_keys(Application::STATUSES))],
+        'notes'  => 'nullable|string',
+    ]);
+
     $oldStatusName = $application->status;
-    $stageId = $request->status; // Now this is the admission_stage_id directly from the form
-   
-    // Get the name of the new status from the selected stage
-    $selectedStage = \App\Models\AdmissionStage::find($stageId);
-   
-    if (!$selectedStage) {
-        return redirect()->back()->with('error', 'Invalid stage selected.');
-    }
-   
-    $newStatusName = $selectedStage->name;
-   
-    // Update application status with the name of the selected stage
+    $newStatusName = $request->status; // The dropdown sends the status name directly
+
+    // Update application status with the selected name
     $application->update(['status' => $newStatusName]);
-   
-    // Now directly insert/update the application_stage record
-    // Check if we have an existing record for this application and stage
-    $existingStage = DB::table('application_stage')
-        ->where('application_id', $application->id)
-        ->where('admission_stage_id', $stageId)
-        ->first();
-   
-    if (!$existingStage) {
-        // Create a new record in application_stage
-        DB::table('application_stage')->insert([
-            'application_id' => $application->id,
-            'admission_stage_id' => $stageId,
-            'created_by' => auth()->id(),
-            'is_completed' => 1,
-            'notes' => $request->notes ?? "Status changed from {$oldStatusName} to {$newStatusName}",
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-    } else {
-        // Update the existing record
-        DB::table('application_stage')
-            ->where('id', $existingStage->id)
-            ->update([
+
+    // Record the change in application_stage when a matching admission stage exists.
+    // Not every manual status maps to an admission_stage row, so this is optional.
+    $selectedStage = \App\Models\AdmissionStage::where('name', $newStatusName)->first();
+
+    if ($selectedStage) {
+        $existingStage = DB::table('application_stage')
+            ->where('application_id', $application->id)
+            ->where('admission_stage_id', $selectedStage->id)
+            ->first();
+
+        if (!$existingStage) {
+            DB::table('application_stage')->insert([
+                'application_id' => $application->id,
+                'admission_stage_id' => $selectedStage->id,
+                'created_by' => auth()->id(),
                 'is_completed' => 1,
-                'completed_at' => now(),
-                'completed_by' => auth()->id(),
-                'notes' => $request->notes ?? $existingStage->notes,
+                'notes' => $request->notes ?? "Status changed from {$oldStatusName} to {$newStatusName}",
+                'created_at' => now(),
                 'updated_at' => now()
             ]);
+        } else {
+            DB::table('application_stage')
+                ->where('id', $existingStage->id)
+                ->update([
+                    'is_completed' => 1,
+                    'completed_at' => now(),
+                    'completed_by' => auth()->id(),
+                    'notes' => $request->notes ?? $existingStage->notes,
+                    'updated_at' => now()
+                ]);
+        }
     }
     
     // Get the student information from the application
@@ -794,12 +796,59 @@ public function updateStatus(Request $request, Application $application)
     //     ]);
     // }
    
+    // Respond with JSON for AJAX (show page + inline list update the badge in place)
+    if ($request->ajax() || $request->wantsJson()) {
+        $newClass = $this->getStatusClass($newStatusName);
+        $oldClass = $this->getStatusClass($oldStatusName);
+
+        // Header-style badge used on the show page
+        $statusBadge = '<span class="badge badge-' . $newClass . ' px-3 py-2">'
+            . '<i class="fas fa-certificate mr-1"></i> ' . e($newStatusName) . '</span>';
+
+        // Pill-style badge used in the applications list (shared partial → stays consistent with reloads)
+        $listBadge = view('partials.status-badge', ['status' => $newStatusName])->render();
+
+        return response()->json([
+            'success'          => true,
+            'message'          => 'Application status updated successfully.',
+            'new_status'       => $newStatusName,
+            'new_status_class' => $newClass,
+            'old_status_class' => $oldClass,
+            'status_badge'     => $statusBadge,
+            'list_badge'       => $listBadge,
+        ]);
+    }
+
     // Flash a success message
     session()->flash('success', 'Application status updated successfully.');
-   
+
     // Redirect back
     return redirect()->back();
 }
+
+/**
+ * Update the application's external reference code.
+ */
+public function updateCode(Request $request, Application $application)
+{
+    $request->validate([
+        'code' => 'nullable|string|max:100',
+    ]);
+
+    $application->update(['code' => $request->code]);
+
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Application code updated successfully.',
+            'code'    => $application->code,
+        ]);
+    }
+
+    session()->flash('success', 'Application code updated successfully.');
+    return redirect()->back();
+}
+
 /**
  * Get the admission_stage_id based on the application status
  * Using the actual data from the admission_stages table
@@ -1057,8 +1106,11 @@ public function uploadMissingFiles(Request $request, Application $application)
 public function uploadFile(Request $request, Application $application)
 {
     $request->validate([
-        'file'      => 'required|file|max:10240',
+        'file'      => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,webp',
         'file_type' => 'required|string|in:first_acceptance,payment_file,final_acceptance,awaiting_student_card',
+    ], [
+        'file.mimes' => 'The document must be a PDF or an image (JPG, PNG, WEBP).',
+        'file.max'   => 'The document may not be larger than 10 MB.',
     ]);
 
     $fileLabels = [

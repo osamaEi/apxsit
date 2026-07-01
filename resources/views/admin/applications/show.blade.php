@@ -3,12 +3,58 @@
 @section('content')
 
 <div class="container-fluid">
+    {{-- Flash + validation messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-1"></i> {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle mr-1"></i> {{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            <ul class="mb-0 pl-3">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    @endif
+
     <!-- Application Header with Quick Actions -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800">
                 Application #{{ $application->id }}
             </h1>
+            {{-- Editable reference code --}}
+            <div class="d-flex align-items-center mt-1" id="appCodeWrap">
+                <span class="small text-muted mr-2"><i class="fas fa-hashtag mr-1"></i>Code:</span>
+                <span id="appCodeDisplay" class="badge badge-light border px-2 py-1" style="font-size:12px">
+                    {{ $application->code ?: 'Not set' }}
+                </span>
+                <button type="button" id="appCodeEditBtn" class="btn btn-link btn-sm p-0 ml-2" title="Edit code">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <div id="appCodeEditRow" class="d-none align-items-center">
+                    <input type="text" id="appCodeInput" class="form-control form-control-sm"
+                           style="width:180px" value="{{ $application->code }}" maxlength="100"
+                           placeholder="Enter code">
+                    <button type="button" id="appCodeSaveBtn" class="btn btn-success btn-sm ml-1">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button type="button" id="appCodeCancelBtn" class="btn btn-secondary btn-sm ml-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
             <p class="mb-0">
                 @php
                     $statusClass = '';
@@ -22,7 +68,7 @@
                         $statusClass = 'info';
                     }
                 @endphp
-                <span class="badge badge-{{ $statusClass }} px-3 py-2">
+                <span id="applicationStatusBadge" class="badge badge-{{ $statusClass }} px-3 py-2">
                     <i class="fas fa-certificate mr-1"></i> {{ $application->status }}
                 </span>
                 <span class="text-muted ml-2">Created {{ $application->created_at->diffForHumans() }}</span>
@@ -35,47 +81,46 @@
                 </span>
                 <span class="text">Edit</span>
             </a>
-            <div class="dropdown mr-2">
-          
-                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="statusDropdown">
+            <div class="dropdown mr-2" id="statusDropdownWrap">
+                <button class="btn btn-info" type="button" id="statusDropdownBtn" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-certificate mr-1"></i> Change Status <i class="fas fa-caret-down ml-1"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="statusDropdownBtn" id="statusDropdownMenu" style="max-height: 400px; overflow-y: auto;">
                     <h6 class="dropdown-header">Select New Status:</h6>
                     @foreach(App\Models\Application::STATUSES as $statusKey => $statusValue)
                         @if($statusValue != $application->status)
                             <a class="dropdown-item status-change" href="javascript:void(0);" data-status="{{ $statusValue }}">
-                                <span class="badge badge-{{ ($statusValue) }} mr-2">
-                                    <i class="fas fa-circle mr-1 fa-sm"></i>
-                                </span>
+                                <i class="fas fa-circle mr-2 fa-sm text-gray-400"></i>
                                 {{ $statusValue }}
                             </a>
                         @endif
                     @endforeach
                 </div>
             </div>
-            <div class="dropdown">
-                <button class="btn btn-secondary btn-icon-split dropdown-toggle" type="button" id="actionsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="icon text-white-50">
-                        <i class="fas fa-cog"></i>
-                    </span>
-                    <span class="text">Actions</span>
+            <div class="dropdown" id="actionsDropdownWrap">
+                <button class="btn btn-secondary" type="button" id="actionsDropdownBtn" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-cog mr-1"></i> Actions <i class="fas fa-caret-down ml-1"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="actionsDropdown">
-                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#historyModal">
-                        <i class="fas fa-history fa-sm fa-fw mr-2 text-gray-400"></i>
-                        View Status History
-                    </a>
-                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#emailModal">
-                        <i class="fas fa-envelope fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Email Student
-                    </a>
-                    <a class="dropdown-item" href="{{ route('admin.applications.export-pdf', $application) }}" target="_blank">
+                <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="actionsDropdownBtn" id="actionsDropdownMenu">
+                    <a class="dropdown-item" href="{{ route('admin.applications.export-pdf') }}" target="_blank">
                         <i class="fas fa-file-pdf fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Download as PDF
+                        Export Applications (PDF)
+                    </a>
+                    <a class="dropdown-item" href="{{ route('admin.applications.edit', $application) }}">
+                        <i class="fas fa-edit fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Edit Application
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteModal">
+                    <a class="dropdown-item text-danger" href="javascript:void(0);"
+                       onclick="if(confirm('Delete this application? This cannot be undone.')){document.getElementById('deleteApplicationForm').submit();}">
                         <i class="fas fa-trash fa-sm fa-fw mr-2 text-danger"></i>
                         Delete Application
                     </a>
+                    <form id="deleteApplicationForm" method="POST"
+                          action="{{ route('admin.applications.destroy', $application) }}" class="d-none">
+                        @csrf
+                        @method('DELETE')
+                    </form>
                 </div>
             </div>
         </div>
@@ -485,6 +530,7 @@
                                             <input type="file"
                                                    id="file_{{ $step['key'] }}"
                                                    name="file"
+                                                   accept=".pdf,image/*"
                                                    style="display:none"
                                                    onchange="docFileSelected(this, '{{ $step['key'] }}')">
                                             <button type="submit"
@@ -497,6 +543,9 @@
                                                 <span class="spinner-border spinner-border-sm mr-1"></span> جاري الرفع…
                                             </div>
                                         </div>
+                                        <small class="text-muted d-block mt-2">
+                                            <i class="fas fa-info-circle mr-1"></i>PDF or image (JPG, PNG, WEBP) — max 10 MB
+                                        </small>
                                     </form>
                                     @else
                                     <div class="doc-role-only">
@@ -526,7 +575,11 @@
                 </div>
                 <div class="card-body">
                     @php
-                        // Progress is driven ONLY by document uploads
+                        // Progress is driven by BOTH document uploads AND the current status.
+                        // Whichever is further along wins, so a manual status change is
+                        // reflected in the pipeline even when documents aren't uploaded yet.
+                        //
+                        // Document-driven progress:
                         // Step 1 = Application Submitted (always done once application exists)
                         // Step 2 = First Acceptance uploaded
                         // Step 3 = Payment Confirmation uploaded
@@ -537,6 +590,32 @@
                         if($paymentFile)          $docProgress = 3;
                         if($finalAcceptance)      $docProgress = 4;
                         if($awaitingStudentCard)  $docProgress = 5;
+
+                        // Status-driven progress: map the application's current status to a step.
+                        // Statuses that don't represent forward pipeline progress (refused,
+                        // cancelled, refunds, etc.) map to null and are ignored here.
+                        $statusStepMap = [
+                            'Application Submitted'           => 1,
+                            'Pending Review'                  => 1,
+                            'Awaiting App Fees Payment'       => 1,
+                            'Awaiting Conditional Acceptance' => 1,
+                            'Conditional Acceptance'          => 2,
+                            'First Acceptance'                => 2,
+                            'Awaiting Payment'                => 2,
+                            'Paid'                            => 3,
+                            'Payment Confirmed'               => 3,
+                            'Awaiting Final Acceptance'       => 3,
+                            'Final Acceptance'                => 4,
+                            'Awaiting Student Card'           => 4,
+                            'Student Card'                    => 5,
+                            'Completed'                       => 5,
+                            'Free Scholarship'                => 5,
+                            '100% Scholarship'                => 5,
+                        ];
+                        $statusProgress = $statusStepMap[$application->status] ?? 0;
+
+                        // Take the furthest of the two so nothing ever regresses visually.
+                        $docProgress = max($docProgress, $statusProgress);
 
                         $totalSteps     = 5;
                         $progressPercent = min(100, round(($docProgress / $totalSteps) * 100));
@@ -549,7 +628,7 @@
                             default                 => 'danger',
                         };
 
-                        // Derive current status label from documents only
+                        // Derive the pipeline stage label from the combined progress
                         $pipelineStatus = match($docProgress) {
                             5 => 'Completed',
                             4 => 'Final Acceptance',
@@ -557,6 +636,11 @@
                             2 => 'First Acceptance',
                             default => 'Application Submitted',
                         };
+
+                        // The pipeline label only tells part of the story: when the actual
+                        // status isn't a forward-pipeline one (Refused, Freeze, etc.) we still
+                        // want to surface it. isPipelineStatus = does status map to a step?
+                        $isPipelineStatus = isset($statusStepMap[$application->status]);
 
                         $pipelineSteps = [
                             ['label' => 'Application Submitted', 'desc' => 'Initial application received',   'icon' => 'fa-file-alt'],
@@ -567,9 +651,9 @@
                         ];
                     @endphp
 
-                    {{-- Current status derived from documents --}}
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <span class="small font-weight-bold text-muted text-uppercase">Pipeline Status</span>
+                    {{-- Current pipeline stage (combined docs + status) --}}
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="small font-weight-bold text-muted text-uppercase">Pipeline Stage</span>
                         @php
                             $psColor = match($pipelineStatus) {
                                 'Completed'           => 'success',
@@ -581,6 +665,14 @@
                         @endphp
                         <span class="badge badge-{{ $psColor }} px-2 py-1" style="font-size:11px">
                             <i class="fas fa-circle mr-1" style="font-size:7px"></i>{{ $pipelineStatus }}
+                        </span>
+                    </div>
+
+                    {{-- Actual application status (what was set manually / on record) --}}
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="small font-weight-bold text-muted text-uppercase">Current Status</span>
+                        <span class="badge badge-{{ $isPipelineStatus ? $psColor : $statusClass }} px-2 py-1" style="font-size:11px">
+                            <i class="fas fa-circle mr-1" style="font-size:7px"></i>{{ $application->status }}
                         </span>
                     </div>
 
@@ -881,119 +973,158 @@
 </style>
 
 <script>
-  // Status update handler for dropdown select
-$('.update-status-select').on('change', function() {
-    const form = $(this).closest('form');
-    const applicationId = $(this).data('application-id');
-    const statusCell = $(this).closest('.status-cell');
-    
-    $.ajax({
-        url: form.attr('action'),
-        type: 'PUT',
-        data: form.serialize(),
-        success: function(response) {
-            if (response.success) {
-                // Replace the status badge
-                statusCell.find('.badge').replaceWith($(response.status_badge));
-                
-                // Update the progress section
-                $('#application-progress-container').html(response.progress_html);
-                
-                // Show success message
-                Swal.fire({
-                    title: 'Success!',
-                    text: response.message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            }
-        },
-        error: function(xhr) {
-            // Show error message
-            Swal.fire({
-                title: 'Error!',
-                text: xhr.responseJSON?.message || 'Failed to update status',
-                icon: 'error'
-            });
-        }
-    });
-});
+// jQuery + Bootstrap load in the layout footer, AFTER this content block.
+// Defer all jQuery-dependent wiring until the page has fully loaded so `$` exists.
+window.addEventListener('load', function () {
 
-// Status change handling for dropdown menu
-$('.status-change').on('click', function() {
-    const newStatus = $(this).data('status');
-    $('#newStatus').val(newStatus);
-    $('#statusDisplay').text(newStatus);
-    $('#changeStatusModal').modal('show');
-});
-
-// Form submission from the modal
-$('#statusChangeForm').on('submit', function(e) {
-    e.preventDefault();
-    
-    $.ajax({
-        url: $(this).attr('action'),
-        type: 'PATCH',
-        data: $(this).serialize(),
-        success: function(response) {
-            if (response.success) {
-                // Close the modal
-                $('#changeStatusModal').modal('hide');
-                
-                // Update the status badge in the header
-                $('.badge.badge-' + response.old_status_class).replaceWith($(response.status_badge));
-                
-                // Update the progress section
-                $('#application-progress-container').html(response.progress_html);
-                
-                // Show success message
-                Swal.fire({
-                    title: 'Success!',
-                    text: response.message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            }
-        },
-        error: function(xhr) {
-            // Show error message
-            Swal.fire({
-                title: 'Error!',
-                text: xhr.responseJSON?.message || 'Failed to update status',
-                icon: 'error'
-            });
-        }
+    // ── Dropdowns: always self-wired (no Bootstrap data-API dependency) ──
+    function bindDropdown(btnSel, menuSel) {
+        $(btnSel).on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var $menu = $(menuSel);
+            // close any other open menus
+            $('#statusDropdownMenu, #actionsDropdownMenu').not($menu).removeClass('show');
+            $menu.toggleClass('show');
+        });
+        $(menuSel).on('click', function (e) { e.stopPropagation(); });
+    }
+    bindDropdown('#statusDropdownBtn', '#statusDropdownMenu');
+    bindDropdown('#actionsDropdownBtn', '#actionsDropdownMenu');
+    // Close menus on any outside click
+    $(document).on('click', function () {
+        $('#statusDropdownMenu, #actionsDropdownMenu').removeClass('show');
     });
-});
-$(document).ready(function() {
-    // Status change handling
-    $('.status-change').on('click', function() {
+
+    // ── Modal open/close fallback (uses jQuery only) ──
+    function openModal(sel) {
+        var $m = $(sel);
+        if ($m.modal) { $m.modal('show'); }         // Bootstrap available
+        else {                                       // plain fallback
+            $m.addClass('show').css('display', 'block').attr('aria-hidden', 'false');
+            $('body').addClass('modal-open');
+            if (!$('.modal-backdrop').length) {
+                $('<div class="modal-backdrop fade show"></div>').appendTo('body');
+            }
+        }
+    }
+    function closeModal(sel) {
+        var $m = $(sel);
+        if ($m.modal) { $m.modal('hide'); }
+        else {
+            $m.removeClass('show').css('display', 'none').attr('aria-hidden', 'true');
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+    }
+    // Wire [data-toggle="modal"] / [data-dismiss="modal"] manually ONLY if
+    // Bootstrap's modal plugin is unavailable (otherwise it handles them).
+    var hasBsModal = !!($.fn && $.fn.modal);
+    if (!hasBsModal) {
+        $(document).on('click', '[data-toggle="modal"]', function (e) {
+            e.preventDefault();
+            openModal($(this).data('target'));
+            $('.dropdown-menu.show').removeClass('show');
+        });
+        $(document).on('click', '[data-dismiss="modal"]', function (e) {
+            e.preventDefault();
+            closeModal($(this).closest('.modal'));
+        });
+    }
+
+    // Open the confirmation modal when a status is picked from the dropdown
+    $(document).on('click', '.status-change', function() {
         const newStatus = $(this).data('status');
         $('#newStatus').val(newStatus);
         $('#statusDisplay').text(newStatus);
-        $('#changeStatusModal').modal('show');
+        $('.dropdown-menu.show').removeClass('show');
+        openModal('#changeStatusModal');
     });
-    
-    // Delete file modal setup
-    $('#deleteFileModal').on('show.bs.modal', function (event) {
-        const button = $(event.relatedTarget);
-        const fileId = button.data('file-id');
-        const fileName = button.data('file-name');
-       
-        const modal = $(this);
-        modal.find('#fileNameDisplay').text(fileName);
-        
-        // Use the correct route format
-        const deleteUrl = "".replace(':fileId', fileId);
-        modal.find('#deleteFileForm').attr('action', deleteUrl);
+
+    // Form submission from the modal
+    $('#statusChangeForm').on('submit', function(e) {
+        e.preventDefault();
+
+        const $form = $(this);
+        const $btn  = $form.find('button[type="submit"]');
+        $btn.prop('disabled', true);
+
+        // Send as POST with method spoofing (_method=PATCH is already in the form).
+        // This is the most reliable path through Laravel + CSRF.
+        $.ajax({
+            url: $form.attr('action'),
+            type: 'POST',
+            data: $form.serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response && response.success) {
+                    closeModal('#changeStatusModal');
+                    window.location.reload();
+                } else {
+                    $btn.prop('disabled', false);
+                    alert((response && response.message) || 'Failed to update status');
+                }
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false);
+                var msg = 'Failed to update status';
+                if (xhr.status === 419) {
+                    msg = 'Session expired (CSRF). Please refresh the page and try again.';
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                } else if (xhr.status) {
+                    msg = 'Error ' + xhr.status + ': ' + (xhr.statusText || 'request failed');
+                }
+                alert(msg);
+                console.error('Status update failed:', xhr.status, xhr.responseText);
+            }
+        });
     });
-    
+
     // Bootstrap custom file input
     $('.custom-file-input').on('change', function() {
         let fileName = $(this).val().split('\\').pop();
         $(this).next('.custom-file-label').addClass("selected").html(fileName || "Choose file");
+    });
+
+    // ── Inline edit: application reference code ──
+    $('#appCodeEditBtn').on('click', function () {
+        $('#appCodeDisplay, #appCodeEditBtn').addClass('d-none');
+        $('#appCodeEditRow').removeClass('d-none').addClass('d-flex');
+        $('#appCodeInput').focus();
+    });
+    $('#appCodeCancelBtn').on('click', function () {
+        $('#appCodeEditRow').removeClass('d-flex').addClass('d-none');
+        $('#appCodeDisplay, #appCodeEditBtn').removeClass('d-none');
+    });
+    $('#appCodeSaveBtn').on('click', function () {
+        var $btn = $(this);
+        var newCode = $('#appCodeInput').val();
+        $btn.prop('disabled', true);
+        $.ajax({
+            url: '{{ route('admin.applications.update-code', $application) }}',
+            type: 'PATCH',
+            data: { code: newCode, _token: '{{ csrf_token() }}' },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function (response) {
+                if (response && response.success) {
+                    $('#appCodeDisplay').text(response.code ? response.code : 'Not set');
+                    $('#appCodeEditRow').removeClass('d-flex').addClass('d-none');
+                    $('#appCodeDisplay, #appCodeEditBtn').removeClass('d-none');
+                } else {
+                    alert('Failed to update code');
+                }
+                $btn.prop('disabled', false);
+            },
+            error: function (xhr) {
+                $btn.prop('disabled', false);
+                alert((xhr.responseJSON && xhr.responseJSON.message) || 'Failed to update code');
+            }
+        });
     });
 });
 
@@ -1030,11 +1161,27 @@ $(document).ready(function() {
         }
     }
 
-    // ── Document upload: select → show name + submit button ──────────
+    // ── Document upload: select → validate type → show name + submit ──
     function docFileSelected(input, key) {
 
         var file = input.files[0];
         if (!file) return;
+
+        // Only PDF or image files are allowed
+        var allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        var isPdf   = /\.pdf$/i.test(file.name);
+        var isImage = /\.(jpe?g|png|webp)$/i.test(file.name);
+        if (allowed.indexOf(file.type) === -1 && !isPdf && !isImage) {
+            alert('Only PDF or image files (JPG, PNG, WEBP) are allowed.');
+            input.value = '';
+            return;
+        }
+        // Size guard (10 MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('The document may not be larger than 10 MB.');
+            input.value = '';
+            return;
+        }
 
         // Show filename on the label
         var label = document.getElementById('label_' + key);
