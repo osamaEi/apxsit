@@ -46,10 +46,8 @@
 <script src="{{ asset('plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js')}}"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('dist/js/adminlte.js')}}"></script>
-<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="{{ asset('dist/js/pages/dashboard.js')}}"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="{{ asset('dist/js/demo.js')}}"></script>
+{{-- AdminLTE demo scripts removed: dashboard.js/demo.js throw on non-dashboard
+     pages (Sparkline "this.element is undefined"), which aborts page JS. --}}
 <script src="{{ asset('plugins/bs-stepper/js/bs-stepper.min.js')}}"></script>
 
 

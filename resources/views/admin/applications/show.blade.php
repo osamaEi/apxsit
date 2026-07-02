@@ -2,6 +2,30 @@
 
 @section('content')
 
+<style>
+/* ── Inline editable reference code ── */
+.app-code { display: inline-flex; align-items: center; gap: 6px; }
+.app-code-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid #d9dee8; background: #f6f8fc; color: #334155;
+    border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+    line-height: 1.4;
+}
+.app-code-chip:hover { border-color: #1a6bff; background: #eef4ff; color: #1a6bff; }
+.app-code-chip.is-empty { color: #94a3b8; font-weight: 500; font-style: italic; }
+.app-code-pen { font-size: 10px; opacity: .55; }
+.app-code-chip:hover .app-code-pen { opacity: 1; }
+
+.app-code-edit { display: inline-flex; align-items: center; gap: 5px; }
+.app-code-input { width: 190px; height: 31px; font-size: 12px; }
+
+body.dark-mode .app-code-chip { background: #0d1e38; border-color: rgba(255,255,255,.12); color: #c8d2e6; }
+body.dark-mode .app-code-chip:hover { background: #0d2a4a; border-color: #3b82f6; color: #6ea8fe; }
+body.dark-mode .app-code-chip.is-empty { color: #4a6080; }
+body.dark-mode .app-code-input { background: #0d1e38; border-color: rgba(255,255,255,.12); color: #c8d2e6; }
+</style>
+
 <div class="container-fluid">
     {{-- Flash + validation messages --}}
     @if(session('success'))
@@ -35,25 +59,26 @@
                 Application #{{ $application->id }}
             </h1>
             {{-- Editable reference code --}}
-            <div class="d-flex align-items-center mt-1" id="appCodeWrap">
-                <span class="small text-muted mr-2"><i class="fas fa-hashtag mr-1"></i>Code:</span>
-                <span id="appCodeDisplay" class="badge badge-light border px-2 py-1" style="font-size:12px">
-                    {{ $application->code ?: 'Not set' }}
-                </span>
-                <button type="button" id="appCodeEditBtn" class="btn btn-link btn-sm p-0 ml-2" title="Edit code">
-                    <i class="fas fa-pencil-alt"></i>
+            <div class="app-code mt-1" id="appCodeWrap">
+                <span class="small text-muted mr-1"><i class="fas fa-hashtag"></i> Code</span>
+
+                {{-- Display mode: whole chip is clickable to edit --}}
+                <button type="button" id="appCodeChip" class="app-code-chip {{ $application->code ? '' : 'is-empty' }}" title="Click to edit code">
+                    <span id="appCodeDisplay">{{ $application->code ?: 'Not set' }}</span>
+                    <i class="fas fa-pencil-alt app-code-pen"></i>
                 </button>
-                <div id="appCodeEditRow" class="d-none align-items-center">
-                    <input type="text" id="appCodeInput" class="form-control form-control-sm"
-                           style="width:180px" value="{{ $application->code }}" maxlength="100"
-                           placeholder="Enter code">
-                    <button type="button" id="appCodeSaveBtn" class="btn btn-success btn-sm ml-1">
+
+                {{-- Edit mode --}}
+                <span id="appCodeEditRow" class="app-code-edit d-none">
+                    <input type="text" id="appCodeInput" class="form-control form-control-sm app-code-input"
+                           value="{{ $application->code }}" maxlength="100" placeholder="Enter code…">
+                    <button type="button" id="appCodeSaveBtn" class="btn btn-success btn-sm px-2" title="Save">
                         <i class="fas fa-check"></i>
                     </button>
-                    <button type="button" id="appCodeCancelBtn" class="btn btn-secondary btn-sm ml-1">
+                    <button type="button" id="appCodeCancelBtn" class="btn btn-light btn-sm px-2 border" title="Cancel">
                         <i class="fas fa-times"></i>
                     </button>
-                </div>
+                </span>
             </div>
             <p class="mb-0">
                 @php
@@ -89,7 +114,9 @@
                     <h6 class="dropdown-header">Select New Status:</h6>
                     @foreach(App\Models\Application::STATUSES as $statusKey => $statusValue)
                         @if($statusValue != $application->status)
-                            <a class="dropdown-item status-change" href="javascript:void(0);" data-status="{{ $statusValue }}">
+                            <a class="dropdown-item status-change" href="javascript:void(0);"
+                               data-status="{{ $statusValue }}"
+                               data-url="{{ route('admin.applications.update-status', $application) }}">
                                 <i class="fas fa-circle mr-2 fa-sm text-gray-400"></i>
                                 {{ $statusValue }}
                             </a>
@@ -996,91 +1023,81 @@ window.addEventListener('load', function () {
         $('#statusDropdownMenu, #actionsDropdownMenu').removeClass('show');
     });
 
-    // ── Modal open/close fallback (uses jQuery only) ──
+    // ── Modal open/close: fully self-managed (no Bootstrap dependency) ──
     function openModal(sel) {
         var $m = $(sel);
-        if ($m.modal) { $m.modal('show'); }         // Bootstrap available
-        else {                                       // plain fallback
-            $m.addClass('show').css('display', 'block').attr('aria-hidden', 'false');
-            $('body').addClass('modal-open');
-            if (!$('.modal-backdrop').length) {
-                $('<div class="modal-backdrop fade show"></div>').appendTo('body');
-            }
+        console.log('[modal] open', sel, 'found?', $m.length);
+        $m.css({ display: 'block' }).addClass('show').attr('aria-hidden', 'false');
+        $m.css('z-index', 20000);
+        $('body').addClass('modal-open');
+        if (!$('#customModalBackdrop').length) {
+            $('<div id="customModalBackdrop" class="modal-backdrop fade show"></div>')
+                .css('z-index', 19990)
+                .appendTo('body');
         }
     }
     function closeModal(sel) {
         var $m = $(sel);
-        if ($m.modal) { $m.modal('hide'); }
-        else {
-            $m.removeClass('show').css('display', 'none').attr('aria-hidden', 'true');
-            $('body').removeClass('modal-open');
-            $('.modal-backdrop').remove();
-        }
+        $m.removeClass('show').css('display', 'none').attr('aria-hidden', 'true');
+        $('body').removeClass('modal-open');
+        $('#customModalBackdrop').remove();
     }
-    // Wire [data-toggle="modal"] / [data-dismiss="modal"] manually ONLY if
-    // Bootstrap's modal plugin is unavailable (otherwise it handles them).
-    var hasBsModal = !!($.fn && $.fn.modal);
-    if (!hasBsModal) {
-        $(document).on('click', '[data-toggle="modal"]', function (e) {
-            e.preventDefault();
-            openModal($(this).data('target'));
-            $('.dropdown-menu.show').removeClass('show');
-        });
-        $(document).on('click', '[data-dismiss="modal"]', function (e) {
-            e.preventDefault();
-            closeModal($(this).closest('.modal'));
-        });
-    }
-
-    // Open the confirmation modal when a status is picked from the dropdown
-    $(document).on('click', '.status-change', function() {
-        const newStatus = $(this).data('status');
-        $('#newStatus').val(newStatus);
-        $('#statusDisplay').text(newStatus);
+    // Wire [data-toggle="modal"] / [data-dismiss="modal"] manually.
+    $(document).on('click', '[data-toggle="modal"]', function (e) {
+        e.preventDefault();
+        openModal($(this).data('target'));
         $('.dropdown-menu.show').removeClass('show');
-        openModal('#changeStatusModal');
+    });
+    $(document).on('click', '[data-dismiss="modal"]', function (e) {
+        e.preventDefault();
+        closeModal($(this).closest('.modal'));
     });
 
-    // Form submission from the modal
-    $('#statusChangeForm').on('submit', function(e) {
-        e.preventDefault();
+    // Change status directly when a status is picked from the dropdown (no modal).
+    // NOTE: bound on the menu itself (not document) because the menu stops click
+    // propagation, so a document-level delegated handler would never fire.
+    var statusBusy = false;
+    $('#statusDropdownMenu').on('click', '.status-change', function () {
+        if (statusBusy) return;
 
-        const $form = $(this);
-        const $btn  = $form.find('button[type="submit"]');
-        $btn.prop('disabled', true);
+        var newStatus = $(this).data('status');
+        var url       = $(this).data('url');
+        var token     = $('meta[name="csrf-token"]').attr('content');
 
-        // Send as POST with method spoofing (_method=PATCH is already in the form).
-        // This is the most reliable path through Laravel + CSRF.
+        // Close the menu immediately
+        $('#statusDropdownMenu, .dropdown-menu.show').removeClass('show');
+
+        if (!confirm('Change status to "' + newStatus + '"?')) return;
+
+        statusBusy = true;
+
         $.ajax({
-            url: $form.attr('action'),
+            url: url,
             type: 'POST',
-            data: $form.serialize(),
+            data: { _method: 'PATCH', _token: token, status: newStatus },
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                'X-CSRF-TOKEN': token
             },
-            dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 if (response && response.success) {
-                    closeModal('#changeStatusModal');
                     window.location.reload();
                 } else {
-                    $btn.prop('disabled', false);
+                    statusBusy = false;
                     alert((response && response.message) || 'Failed to update status');
                 }
             },
-            error: function(xhr) {
-                $btn.prop('disabled', false);
+            error: function (xhr) {
+                statusBusy = false;
                 var msg = 'Failed to update status';
                 if (xhr.status === 419) {
-                    msg = 'Session expired (CSRF). Please refresh the page and try again.';
+                    msg = 'Session expired. Refresh the page and try again.';
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
                 } else if (xhr.status) {
                     msg = 'Error ' + xhr.status + ': ' + (xhr.statusText || 'request failed');
                 }
                 alert(msg);
-                console.error('Status update failed:', xhr.status, xhr.responseText);
             }
         });
     });
@@ -1092,18 +1109,18 @@ window.addEventListener('load', function () {
     });
 
     // ── Inline edit: application reference code ──
-    $('#appCodeEditBtn').on('click', function () {
-        $('#appCodeDisplay, #appCodeEditBtn').addClass('d-none');
-        $('#appCodeEditRow').removeClass('d-none').addClass('d-flex');
-        $('#appCodeInput').focus();
-    });
-    $('#appCodeCancelBtn').on('click', function () {
-        $('#appCodeEditRow').removeClass('d-flex').addClass('d-none');
-        $('#appCodeDisplay, #appCodeEditBtn').removeClass('d-none');
-    });
-    $('#appCodeSaveBtn').on('click', function () {
-        var $btn = $(this);
-        var newCode = $('#appCodeInput').val();
+    function openCodeEdit() {
+        $('#appCodeChip').addClass('d-none');
+        $('#appCodeEditRow').removeClass('d-none');
+        $('#appCodeInput').focus().select();
+    }
+    function closeCodeEdit() {
+        $('#appCodeEditRow').addClass('d-none');
+        $('#appCodeChip').removeClass('d-none');
+    }
+    function saveCode() {
+        var $btn = $('#appCodeSaveBtn');
+        var newCode = $('#appCodeInput').val().trim();
         $btn.prop('disabled', true);
         $.ajax({
             url: '{{ route('admin.applications.update-code', $application) }}',
@@ -1112,9 +1129,11 @@ window.addEventListener('load', function () {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             success: function (response) {
                 if (response && response.success) {
-                    $('#appCodeDisplay').text(response.code ? response.code : 'Not set');
-                    $('#appCodeEditRow').removeClass('d-flex').addClass('d-none');
-                    $('#appCodeDisplay, #appCodeEditBtn').removeClass('d-none');
+                    var code = response.code || '';
+                    $('#appCodeDisplay').text(code || 'Not set');
+                    $('#appCodeChip').toggleClass('is-empty', !code);
+                    $('#appCodeInput').val(code);
+                    closeCodeEdit();
                 } else {
                     alert('Failed to update code');
                 }
@@ -1125,6 +1144,14 @@ window.addEventListener('load', function () {
                 alert((xhr.responseJSON && xhr.responseJSON.message) || 'Failed to update code');
             }
         });
+    }
+
+    $('#appCodeChip').on('click', openCodeEdit);
+    $('#appCodeCancelBtn').on('click', closeCodeEdit);
+    $('#appCodeSaveBtn').on('click', saveCode);
+    $('#appCodeInput').on('keydown', function (e) {
+        if (e.key === 'Enter')  { e.preventDefault(); saveCode(); }
+        if (e.key === 'Escape') { e.preventDefault(); closeCodeEdit(); }
     });
 });
 
